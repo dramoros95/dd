@@ -127,7 +127,7 @@ C . of charged shells, of ionized (l,mu)
       DIMENSION cd(nd+1)
 
 C . Geometry / orbital switches and symmetry flag
-      INTEGER igeom,iorb,nteff,isr
+      INTEGER igeom,iorb,nteff,isr,iorth
       LOGICAL lsym
 
 C . THE TARGET (SUBROUTINE TARGET): nuclear charge, charged shells,
@@ -139,7 +139,7 @@ C . Slater functions n , zeta , c)
      $  ,esz(nstox),csz(nstox)
       INTEGER lorb(norbx),morb(norbx),iono(norbx),ist(norbx),nst(norbx)
      $  ,nsn(nstox),nsh,norb
-      DOUBLE PRECISION RADF,ORBNRM,ZSCR
+      DOUBLE PRECISION RADF,ORBNRM,ZSCR,SPHJ
 
 C . THE IONIZED PARTS: nio parts (jorb), their ncm (l,mu) channels
 C . (iocm = part, lcm = l, mcm = mu, wcm = 1/(2l+1), ipcm = channel
@@ -171,6 +171,21 @@ C .   qsacc(icm,ia)     : the amplitude T of the (l,mu) icm
       DOUBLE PRECISION, ALLOCATABLE :: ak01xa(:),ak01ya(:),ak01za(:)
       DOUBLE PRECISION, ALLOCATABLE :: anc01a(:)
       COMPLEX*16, ALLOCATABLE :: qsacc(:,:),qsl(:,:)
+C . Orthogonalization of the ejected wave (iorth=1, see the file
+C . theory_orthogonalization.md): sov(icm,ia) = <phi_b|chi> of the
+C . channel icm for the angle ia ; radial grid rq/wq (nrq points) and
+C . rho = R**2 r**2 w of the ionized parts ; cgo(L/2,icm) = angular and
+C . normalisation factors of G(p)/n ; per thread : aiq(L/2,je) = radial
+C . integrals for the current |p| , gp(icm,k) = G(p)/n at the points k
+      PARAMETER (nrqi=15)
+      COMPLEX*16, ALLOCATABLE :: sov(:,:)
+      DOUBLE PRECISION rq(nrqi*nleg),wq(nrqi*nleg),rho(nrqi*nleg,norbx)
+     $  ,cgo(0:2,ncmx),aiq(0:2,norbx),gp(ncmx,nlf)
+      COMPLEX*16 qbv0(nstox),pbv0(nstox),qbk0(0:12,nstox),tfv0(ncmx)
+     $  ,qtec0
+      DOUBLE PRECISION xpr,cth2,pl0,pl2,pl4,sjl,ylmr,ptx,pty,ptz,apt
+     $  ,aiqt,bmax
+      INTEGER nrq,lq2,ia2
 
 C . Thread-private work arrays for one block of nlf points (all phi_p
 C . values of one (p,theta_p,kf) line): TECWN phases E+ (epp) and E-
@@ -211,6 +226,10 @@ C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
       igeom=1
       iorb=1
       isr=0
+C .  ORTHOGONALIZATION : iorth = 0 : ejected wave as it is (Ch4.for) ;
+C .     iorth = 1 : ejected wave orthogonalized to the ionized orbital,
+C .     channel by channel (see theory_orthogonalization.md)
+      iorth=0
       Ete=api/2.d0
 C . The mirror-symmetry shortcut is exact only when ke_y=0 for
 C . every angle, i.e. in the coplanar geometry.
@@ -500,6 +519,7 @@ C .  symmetry, full grid otherwise
       allocate(akexa(nang),akeya(nang),akeza(nang),at11a(nang))
       allocate(ak01xa(nang),ak01ya(nang),ak01za(nang),anc01a(nang))
       allocate(qsacc(ncm,nang))
+      allocate(sov(ncm,nang))
 
 C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 C .  PRECOMPUTE ALL ANGLE-DEPENDENT DATA (once per angle, cheap)
@@ -598,6 +618,124 @@ C .   K01 = (Ks-Ke)/2 and its Gamow factor anc01
 C .  |ke|**2 for TFGB (the same for all the angles)
       ake2=ake*ake
 
+C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+C .  ORTHOGONALIZATION (iorth=1) : the data which do not depend on p
+C .  (theory_orthogonalization.md , eqs. for S , G , cgo)
+C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+      sov=(0.d0,0.d0)
+      nrq=nrqi*nleg
+      if (iorth.eq.1) then
+C .  radial grid [0,30] a.u. , nrqi intervals of nleg Gauss points ;
+C .  rho(r) = R_g(r)**2 r**2 w
+      do id=1,nrqi
+      do i=1,nleg
+         ir=(id-1)*nleg+i
+         rq(ir)=(dx(i)*(30.d0/nrqi)+(2*id-1)*30.d0/nrqi)*0.5d0
+         wq(ir)=dw(i)*(30.d0/nrqi)*0.5d0
+         do je=1,nio
+            rho(ir,je)=RADF(rq(ir),jorb(je),ist,nst,nsn,esz,csz)**2
+     $        *rq(ir)**2*wq(ir)
+         enddo
+      enddo
+      enddo
+C .  cgo(L/2,icm) = (2pi)**-1.5 * 4pi * (-i)**L * A(l,mu,L) *
+C .  sqrt((2L+1)/4pi) / n_g ,  A = int |Y(l,mu)|**2 Y(L,0) dOmega
+C .  (numerical , nleg-point Gauss in cos(theta) , exact here)
+      do icm=1,ncm
+         lq=lcm(icm)
+         mq=mcm(icm)
+         bn=ORBNRM(jorb(iocm(icm)),ist,nst,nsn,esz,csz)
+         do lq2=0,2
+            cgo(lq2,icm)=0.d0
+            if (2*lq2.le.2*lq) then
+               bs=0.d0
+               do i=1,nleg
+                  ylmr=cdabs(ylm(lq,dble(mq),dx(i),0.d0))**2
+                  cth2=dx(i)
+                  if (lq2.eq.0) pl0=1.d0
+                  if (lq2.eq.1) pl0=1.5d0*cth2*cth2-0.5d0
+                  if (lq2.eq.2) pl0=(35.d0*cth2**4-30.d0*cth2**2+3.d0)
+     $               /8.d0
+                  bs=bs+dw(i)*ylmr*pl0*dsqrt((4*lq2+1)/(4.d0*api))
+               enddo
+               bs=bs*2.d0*api
+               cgo(lq2,icm)=4.d0*api/sqrt2pi3*dble(1-2*mod(lq2,2))*bs
+     $            *dsqrt((4*lq2+1)/(4.d0*api))/bn
+            endif
+         enddo
+      enddo
+C .  S = <phi_b|chi> = (2pi)**1.5 * F(p=0) for every channel and angle :
+C .  F(0) = analytic part (TFGA , ad=0) + TECWN with exp(-i p.r)=1
+      CALL TFGB(az,0.d0,ake2,nsl,ltv,nsv,esv,kmx,qbv0,pbv0,qbk0)
+      do ia2=1,nang
+         CALL TFGA(az,0.d0,0.d0,0.d0,akexa(ia2),akeya(ia2),akeza(ia2)
+     $   ,nsl,ltv,nsv,esv,cfv,iov,kmx,qbv0,pbv0,qbk0,nio,ncm,iocm,lcm
+     $   ,mcm,tfv0)
+         do icm=1,ncm
+C .  TECWN at p=0 from the stored columns (half grid : E+=2 , E-=0)
+            if (.not.lsym) then
+               icol=icm
+               bs=1.d0
+            else if (mcm(icm).eq.0) then
+               icol=icm
+               bs=2.d0
+            else if (mcm(icm).gt.0) then
+               icol=icm
+               bs=1.d0
+            else
+               icol=ipcm(icm)
+               bs=dble(1-2*mod(abs(mcm(icm)),2))
+            endif
+            qtec0=(0.d0,0.d0)
+            do ig=1,nteff
+               qtec0=qtec0+dcmplx(ctr(ig,icol,ia2),cti(ig,icol,ia2))
+            enddo
+            sov(icm,ia2)=sqrt2pi3*(tfv0(icm)+bs*qtec0)
+         enddo
+      enddo
+      write(*,'(A)') ' ejected wave orthogonalized to the orbital'
+C .  self-check of G(p)/n (formula vs brute-force 3D integration of
+C .  (2pi)**-1.5/n int |R Y(l,mu)|**2 exp(-i p.r) d3r) at one point p
+      ptx=0.7d0 ; pty=-0.4d0 ; ptz=0.9d0
+      apt=dsqrt(ptx**2+pty**2+ptz**2)
+      cth2=ptz/apt
+      call GAULEG(-1.d0,1.d0,dxt,dwt,40,2d-16)
+      bmax=0.d0
+      do icm=1,ncm
+         je=iocm(icm)
+         bs=0.d0
+         do lq2=0,2
+            aiqt=0.d0
+            do ig=1,nrq
+               aiqt=aiqt+rho(ig,je)*SPHJ(2*lq2,apt*rq(ig))
+            enddo
+            if (lq2.eq.0) pl0=1.d0
+            if (lq2.eq.1) pl0=1.5d0*cth2*cth2-0.5d0
+            if (lq2.eq.2) pl0=(35.d0*cth2**4-30.d0*cth2**2+3.d0)/8.d0
+            bs=bs+cgo(lq2,icm)*aiqt*pl0
+         enddo
+         qtec0=(0.d0,0.d0)
+         do ig=1,nrq
+         do j=1,40
+         do k=1,40
+            et=api*(dxt(j)+1.d0)*0.5d0
+            ef=api*(dxt(k)+1.d0)
+            adr=rq(ig)*(ptx*dsin(et)*dcos(ef)+pty*dsin(et)*dsin(ef)
+     $        +ptz*dcos(et))
+            qtec0=qtec0+rho(ig,je)*cdabs(ylm(lcm(icm),dble(mcm(icm))
+     $        ,dcos(et),ef))**2*dcmplx(dcos(adr),-dsin(adr))
+     $        *dwt(j)*dwt(k)*dsin(et)*api*api*0.5d0
+         enddo
+         enddo
+         enddo
+         qtec0=qtec0/sqrt2pi3/ORBNRM(jorb(je),ist,nst,nsn,esz,csz)
+         bmax=max(bmax,cdabs(qtec0-bs)/cdabs(qtec0))
+      enddo
+      write(*,'(A,E10.2)') '   check of G(p) (max relative diff) :',bmax
+      write(*,'(A,I3,A,9E11.3)') '   |<phi_b|chi>| angle 1, channels 1..'
+     $ ,min(ncm,9),' :',(cdabs(sov(icm,1)),icm=1,min(ncm,9))
+      endif
+
       qsacc=(0.d0,0.d0)
       ntask=np*nlp*nt
       ndone=0
@@ -624,14 +762,16 @@ C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 !$OMP& akexa,akeya,akeza,ak01xa,ak01ya,ak01za,ake2,
 !$OMP& nang,aki,az,az01,alpha,almda,aksx,aksy,aksz,
 !$OMP& ncm,nio,nsl,kmx,iocm,lcm,mcm,ipcm,icpm,ltv,nsv,esv,cfv,iov,
-!$OMP& qsacc,ntask,ndone,nprint)
+!$OMP& qsacc,ntask,ndone,nprint,
+!$OMP& iorth,nrq,rq,rho,cgo,sov,jorb)
 !$OMP& PRIVATE(kp,i1,kt,j,kf,k,ig,ia,ap,atp,afp,apx,apy,apz,
 !$OMP& apex,apey,apez,akpx,akpy,akpz,akp01x,akp01y,akp01z,aqp,
 !$OMP& cp_del,ct_del,cf_del,adr,dcs,dsn,ew1r,ew1i,ew2r,ew2i,
 !$OMP& e1r,e1i,e2r,e2i,bwr,bwi,bcs,bsn,acc1r,acc1i,acc2r,acc2i,
 !$OMP& QT1,QC2,QC1,QT2,qdiff,icm,icol,ip,im,kk,sgm,
 !$OMP& eppr,eppi,empr,empi,qbv,pbv,qbk,qcol,qsm,tfv,
-!$OMP& apxb,apyb,apzb,chb,qa1,qa2,qsl,nmine)
+!$OMP& apxb,apyb,apzb,chb,qa1,qa2,qsl,nmine,
+!$OMP& aiq,gp,xpr,cth2,pl0,pl2,pl4,sjl,je,lq2)
       allocate(eppr(nteff,nlf),eppi(nteff,nlf))
       allocate(empr(nteff,nlf),empi(nteff,nlf))
       allocate(qbv(nsl,nlf),pbv(nsl,nlf),qbk(0:kmx,nsl,nlf))
@@ -646,6 +786,24 @@ C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
          cp_del=cp(kp+1)-cp(kp)
          ap=(dxp(i1)*cp_del+cp(kp+1)+cp(kp))/2.d0
          ct_del=ct(kt+1)-ct(kt)
+C .  iorth=1 : radial integrals I_L(|p|) = int rho(r) j_L(|p| r) dr of
+C .  the ionized parts (L=0,2,4) , once per task (|p| fixed)
+         if (iorth.eq.1) then
+            do je=1,nio
+               aiq(0,je)=0.d0
+               aiq(1,je)=0.d0
+               aiq(2,je)=0.d0
+            enddo
+            do ig=1,nrq
+               xpr=ap*rq(ig)
+               do lq2=0,2
+                  sjl=SPHJ(2*lq2,xpr)
+                  do je=1,nio
+                     aiq(lq2,je)=aiq(lq2,je)+rho(ig,je)*sjl
+                  enddo
+               enddo
+            enddo
+         endif
 
       do j=1,nlt
          atp=(dxt(j)*ct_del+ct(kt+1)+ct(kt))/2.d0
@@ -668,6 +826,18 @@ C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 C .    integration weight ("chandler" in Ch4.for)
          chb(k)=dwp(i1)*dwt(j)*dwf(k)*dsin(atp)*ap*ap
      $    *cp_del*ct_del*cf_del/8.d00
+C .    iorth=1 : gp = G(p)/n of every channel at this point
+         if (iorth.eq.1) then
+            cth2=dcos(atp)
+            pl0=1.d0
+            pl2=1.5d0*cth2*cth2-0.5d0
+            pl4=(35.d0*cth2**4-30.d0*cth2**2+3.d0)/8.d0
+            do icm=1,ncm
+               je=iocm(icm)
+               gp(icm,k)=cgo(0,icm)*aiq(0,je)*pl0+cgo(1,icm)*aiq(1,je)
+     $          *pl2+cgo(2,icm)*aiq(2,je)*pl4
+            enddo
+         endif
 
 C .    TSCWN sums: sw1 = TSCWN(nn=2,mn=1), sw2 = TSCWN(nn=1,mn=0)
          ew1r=0.d0 ; ew1i=0.d0 ; ew2r=0.d0 ; ew2i=0.d0
@@ -812,7 +982,12 @@ C .  (QC1 and QT2 depend on the angle through K01)
 C .  INTEGRATION SUMMATION (one amplitude per (l,mu) channel)
          qdiff=(QC1*qa1(k)-QT2*qa2(k))*chb(k)
          do icm=1,ncm
-            qsl(icm,ia)=qsl(icm,ia)+qdiff*(tfv(icm)+qsm(icm,k))
+            if (iorth.eq.1) then
+               qsl(icm,ia)=qsl(icm,ia)+qdiff*(tfv(icm)+qsm(icm,k)
+     $          -sov(icm,ia)*gp(icm,k))
+            else
+               qsl(icm,ia)=qsl(icm,ia)+qdiff*(tfv(icm)+qsm(icm,k))
+            endif
          enddo
       enddo
       enddo
@@ -5208,9 +5383,37 @@ c fonction spherique bessel pour bz, COMPLETE fait appel � asphb et asph
   81  end
 
 
-
-
-
-
-
-
+C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+C .  SPHJ(l,x) : spherical Bessel function j_l(x) , l = 0 , 2 , 4      .
+C .  (series for x < 1 , closed forms otherwise)                      .
+C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+      FUNCTION SPHJ(l,x)
+      IMPLICIT NONE
+      INTEGER l,k
+      DOUBLE PRECISION SPHJ,x,t,s,df,sn,cs
+      if (x.lt.1.d0) then
+C .  j_l(x) = x**l/(2l+1)!! * sum_k (-x*x/2)**k/(k! (2l+3)...(2l+2k+1))
+         df=1.d0
+         do k=1,2*l+1,2
+            df=df*k
+         enddo
+         t=1.d0
+         s=1.d0
+         do k=1,10
+            t=-t*x*x/(2.d0*k*(2*l+2*k+1))
+            s=s+t
+         enddo
+         SPHJ=s*x**l/df
+      else
+         sn=dsin(x)
+         cs=dcos(x)
+         if (l.eq.0) then
+            SPHJ=sn/x
+         else if (l.eq.2) then
+            SPHJ=(3.d0/x**3-1.d0/x)*sn-3.d0*cs/x**2
+         else
+            SPHJ=(105.d0/x**5-45.d0/x**3+1.d0/x)*sn
+     $        -(105.d0/x**4-10.d0/x**2)*cs
+         endif
+      endif
+      end
