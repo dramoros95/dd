@@ -127,7 +127,7 @@ C . of charged shells, of ionized (l,mu)
       DIMENSION cd(nd+1)
 
 C . Geometry / orbital switches and symmetry flag
-      INTEGER igeom,iorb,nteff
+      INTEGER igeom,iorb,nteff,isr
       LOGICAL lsym
 
 C . THE TARGET (SUBROUTINE TARGET): nuclear charge, charged shells,
@@ -156,7 +156,7 @@ C . split in real/imaginary parts (for vectorisation)
       DOUBLE PRECISION r_tec_x(ntec),r_tec_y(ntec),r_tec_z(ntec)
       DOUBLE PRECISION r_ts_x(nts),r_ts_y(nts),r_ts_z(nts)
       DOUBLE PRECISION cts1r(nts),cts1i(nts),cts2r(nts),cts2i(nts)
-      COMPLEX*16 qf,wbase,base_cf,qbr,qy,qym,qcc
+      COMPLEX*16 qf,wbase,base_cf,qbr,qy,qym,qcc,qsr
       DOUBLE PRECISION wgt,sqrt2pi3,sgm,ake2
       INTEGER g,nang,ia,ntask,ndone,nprint,nmine,nkh
 
@@ -201,9 +201,16 @@ C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 C .  GEOMETRY:  1 = coplanar (theta_e scanned in the x-z plane)
 C .             2 = Ch4.for  (Ete fixed, azimuth phi_e scanned)
 C .  ORBITAL :  1 = 3a1 , 2 = 1e , 3 = 2a1  (0 = CH4 1t2 test)
+C .  SHORT-RANGE POTENTIAL : isr = 0 : projectile-core interaction
+C .     -1/r0 (frozen core reduced to its asymptotic charge, as in
+C .     Ch4.for) ; isr = 1 : -Z_ion(r0)/r0 (static potential of the
+C .     nuclei + the passive electrons, spherical average, the same
+C .     Z(r) as azs) , i.e. the short-range part -(Z_ion(r0)-1)/r0 is
+C .     added (the SR term of the BBKSR model of El Mir et al.).
 C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
       igeom=1
       iorb=1
+      isr=0
       Ete=api/2.d0
 C . The mirror-symmetry shortcut is exact only when ke_y=0 for
 C . every angle, i.e. in the coplanar geometry.
@@ -431,8 +438,18 @@ C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
      $     -dconjg(q1ffs(id,i,j,k))*q0ffi(id,i,j,k)
          wbase=qf*dexp(-alpha*ar)*dw(i)*dw(j)*dw(k)*dsin(et)
      $        *(api**2)*(cd(id+1)-cd(id))/4.d0/sqrt2pi3
-         cts1r(g)=dreal(wbase*ar)
-         cts1i(g)=dimag(wbase*ar)
+C .    isr=1 : short-range part of the projectile-core potential in
+C .    the 3rd term (1/r -> Z_ion(r)/r) : the full waves (not their
+C .    difference with the Z=0/Z=1 waves) times (Z_ion(r)-1) , r < d
+         if (isr.eq.1) then
+            qsr=dconjg(qffs(id,i,j,k))*qffi(id,i,j,k)*(azs(id,i)-az1)
+     $       *dexp(-alpha*ar)*dw(i)*dw(j)*dw(k)*dsin(et)
+     $       *(api**2)*(cd(id+1)-cd(id))/4.d0/sqrt2pi3
+         else
+            qsr=(0.d0,0.d0)
+         endif
+         cts1r(g)=dreal(wbase*ar+qsr*ar)
+         cts1i(g)=dimag(wbase*ar+qsr*ar)
          cts2r(g)=dreal(wbase*ar*ar*ay00)
          cts2i(g)=dimag(wbase*ar*ar*ay00)
       enddo
