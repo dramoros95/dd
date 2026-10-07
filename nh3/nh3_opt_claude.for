@@ -229,8 +229,13 @@ C . ANGLES & ENERGIES (same kinematics as ch4_opt_claude.for :
 C . Ei=500 eV , ejected Ee=74 eV , scattering angle 6 deg).
 C . Eio comes from TARGET (vertical IP of the chosen NH3 orbital).
 C . CHANGE THEM HERE FOR YOUR EXPERIMENT.
+C . Esfix > 0 : the SCATTERED energy is fixed instead of Ei
+C . (Ei = Esfix+Ee+Eio), as in the Orsay/Paris (e,2e) experiments
+C . (Lahmam-Bennani et al. CH4 2009 ; El Mir et al. NH3 2015, 2020 :
+C . Es=500 eV , theta_s=-6 deg , Ee=37 or 74 eV). Esfix=0 : Ei used.
       ets=6.d00*arad ; afs=180.d00*arad
-      Ee=74.d00 ; Ei=500.d00
+      Ee=74.d00 ; Ei=500.d00 ; Esfix=0.d00
+      if (Esfix.gt.0.d0) Ei=Esfix+Ee+Eio
       Es=Ei-Ee-Eio
       if (Es.le.0.d0) stop 'Es = Ei-Ee-Eio <= 0 : check the energies'
       aki=dsqrt(Ei*acon)
@@ -2451,7 +2456,7 @@ ccc   argument 2l+2 de fonction hypergeometrique
       end
 
 
-ccccc  dephasage coulombien appelé cs cccccc
+ccccc  dephasage coulombien appelï¿½ cs cccccc
 
 
 
@@ -3439,7 +3444,7 @@ c handbook p.508 13.5.1
 
 
        function algndr(l,m,ax)
-c fonction polynomes de legendre associés aux harmoniques sphériques  
+c fonction polynomes de legendre associï¿½s aux harmoniques sphï¿½riques  
 c ax=cos (theta)     
       implicit double precision (a-h)
       bx=dabs(ax)
@@ -3475,7 +3480,7 @@ c      endif
       end
 
       function ylm(l,am,ax,ay)
-c fonction y(l,m) harmoniques sphériques 
+c fonction y(l,m) harmoniques sphï¿½riques 
 c ax=cos (theta) 
 c ay=phi      
       implicit double precision (a-h)
@@ -5119,7 +5124,7 @@ c fonction spherique bessel pour bz PETIT
       end
 
       function asphv(n,bz)
-c fonction spherique bessel pour bz, COMPLETE fait appel à asphb et asph
+c fonction spherique bessel pour bz, COMPLETE fait appel ï¿½ asphb et asph
       implicit double precision (a-h)
       implicit complex*16 (o-z)
       dimension a0(46)
