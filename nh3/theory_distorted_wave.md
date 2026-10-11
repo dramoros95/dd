@@ -31,8 +31,12 @@ These are large. They are the shifts that the $Z=1$ wave outside $r=4$ does not 
 **Partial-wave content.** For a true continuum state, each partial wave $A_l(r)$ has a
 **constant** phase $\sigma_l+\delta_l$ (mod $\pi$) at all $r$. Results:
 - the exact distorted wave (DW) has a constant phase, as it should;
-- the 3CWZ wave has a phase that **drifts with $r$**: for $l=1$, from $-0.96$ to $+2.9$ rad over $r=0.3$–$2.5$. The exact phase is $1.15$ (mod $\pi$);
-- the 3CWZ amplitudes are wrong by factors of up to ~7 (s wave at $r=0.3$–$0.6$, p wave at $r=1.5$).
+- the 3CWZ wave has a phase that **drifts with $r$** and tends to the $Z=1$ Coulomb phase,
+  not to the exact one. For $l=1$ it goes from $-0.96$ to $-0.22$ rad (mod $\pi$) over
+  $r=0.3$–$2.5$; the $Z=1$ value is $-0.19$ and the exact value is $1.15$;
+- the radial nodes are in the wrong places, so locally the amplitudes differ by factors of up to ~7
+  (s wave at $r=0.3$–$0.6$, p wave at $r=1.5$). The exact s wave has its nodes where it must be
+  orthogonal to the 1s/2s-like core; the 3CWZ wave does not.
 
 So inside the molecule, where $\langle\phi_b|e^{-i\mathbf p\cdot\mathbf r}|\Phi\rangle$ is
 computed, the 3CWZ wave is **not** a solution of Eq. (11).
