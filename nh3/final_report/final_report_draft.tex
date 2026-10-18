@@ -6,9 +6,11 @@
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{longtable}
 \usepackage{xcolor}
 \usepackage{caption}
 \usepackage{fancyhdr}
+\usepackage{float}
 \usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
 
 \pagestyle{fancy}
@@ -16,6 +18,7 @@
 \fancyhead[L]{O. Zaidi --- CRNA}
 \fancyhead[R]{Final report (draft)}
 \fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
 
 % Placeholder for material still to be produced or checked
 \newcommand{\todo}[1]{\par\smallskip\noindent\fcolorbox{orange!70!black}{orange!8}{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule}{\small\textbf{To complete:} #1}}\par\smallskip}
@@ -23,12 +26,15 @@
 \newcommand{\CH}{CH$_4$}
 \newcommand{\aone}{3a$_1$}
 \newcommand{\atwo}{2a$_1$}
+\newcommand{\bk}{\mathbf k}
+\newcommand{\br}{\mathbf r}
+\newcommand{\bp}{\mathbf p}
 
 \title{\textbf{Application of the three-Coulomb-wave model with variable charge (3CWZ)\\
 to the single ionization of CH$_4$ and NH$_3$ by electron impact}\\[4pt]
 \large Final report of the research protocol --- \textcolor{orange!70!black}{DRAFT}}
 \author{Omar Zaidi\\ Division de Physique, Centre de Recherche Nucl\'eaire d'Alger\\
-Supervision: N. Zenine}
+Supervision: N. Zenine, Chercheur Expert Senior}
 \date{2026}
 
 \begin{document}
@@ -36,272 +42,630 @@ Supervision: N. Zenine}
 \thispagestyle{fancy}
 
 \begin{abstract}
-We extend the three-Coulomb-wave model with a position-dependent effective charge (3CWZ) from
-atomic to molecular targets and apply it to the single ionization of \CH{} and \NH{} by electron
-impact.
+This report presents the extension of the three-Coulomb-wave model with a position-dependent
+effective charge (3CWZ) from atomic to molecular targets, and its application to the single
+ionization of \CH{} and \NH{} by electron impact.
+
+\textbf{Model.}
 \begin{itemize}
-\item \textbf{Target:} described by the one-centre SCF molecular orbitals of Moccia. The random
-  orientation of the molecule is averaged analytically.
-\item \textbf{Effective charges:} derived from the monopole part of the Hartree potential of the SCF
-  density, with a self-interaction correction for the ejected electron.
-\item \textbf{Code:} we implemented the model in a parallel Fortran code. We validated it against
-  the original \CH{} code and against analytic limits.
-\item \textbf{Comparisons for \NH{}:}
-  \begin{itemize}
-  \item triple differential cross sections measured by El~Mir \emph{et al.} at $E_s=500$~eV,
-    $\theta_s=-6^\circ$, $E_e=74$~eV;
-  \item electron momentum spectroscopy profiles (1200~eV);
-  \item double differential cross sections at $E_i=500$~eV.
-  \end{itemize}
+\item The target is described by the one-centre self-consistent-field (SCF) molecular orbitals of
+  Moccia, expanded on Slater-type functions centred on the heavy atom.
+\item The random orientation of the molecules is averaged analytically with the orthogonality of
+  the Wigner rotation matrices.
+\item The effective charges are derived from the monopole part of the Hartree potential of the SCF
+  density. A self-interaction correction distinguishes the ejected electron from the incident one.
 \end{itemize}
-The binary peak is well reproduced for the three valence orbitals \aone, 1e and \atwo. The recoil
-peak is underestimated by a factor 5--10. We trace this deficit to the ejected-electron wave: the
-variable-charge Coulomb wave does not solve the one-electron equation in the screened ionic
-potential, and it misses the strong back-scattering by the NH$_3^+$ core. We delimit the
-kinematic and numerical domain of validity of the model, and we propose a distorted-wave treatment
-of the ejected electron as the next step.
-\todo{Update the abstract with the \CH{} results, the PCI study and the variable- versus
-constant-charge comparison (Sections~\ref{sec:ch4}--\ref{sec:zconst}).}
+
+\textbf{Implementation.} The model was implemented in a parallel Fortran code and validated
+against the original \CH{} code and against analytic limits.
+
+\textbf{Comparisons for \NH:}
+\begin{itemize}
+\item triple differential cross sections (TDCS) measured by El~Mir \emph{et al.} at $E_s=500$~eV,
+  $\theta_s=-6^\circ$, $E_e=74$~eV;
+\item electron momentum spectroscopy (EMS) profiles at 1200~eV;
+\item double differential cross sections (DDCS) at $E_i=500$~eV.
+\end{itemize}
+
+\textbf{Results.}
+\begin{itemize}
+\item The binary peak is well reproduced for the three valence orbitals \aone, 1e and \atwo.
+\item The recoil peak is underestimated by a factor 5--10.
+\item We show that this deficit comes from the ejected-electron wave. The variable-charge Coulomb
+  wave does not solve the one-electron equation in the screened ionic potential, and it misses
+  the strong back-scattering of the NH$_3^+$ core: short-range phase shifts of up to 2.6~rad, and
+  elastic back-scattering about 100 times the Coulomb value.
+\item We delimit the kinematic and numerical domain of validity of the model and propose a
+  distorted-wave treatment of the ejected electron.
+\end{itemize}
+\todo{Update the abstract with the \CH{} results, the PCI study and the comparison between
+variable and constant charge (Sections~\ref{sec:ch4}--\ref{sec:zconst}).}
 \end{abstract}
 
+\renewcommand{\abstractname}{R\'esum\'e}
+\begin{abstract}
+Ce rapport pr\'esente l'extension du mod\`ele \`a trois ondes coulombiennes avec charge effective
+variable (3CWZ) aux cibles mol\'eculaires et son application \`a l'ionisation simple de \CH{} et
+\NH{} par impact \'electronique.
+
+Le mod\`ele utilise :
+\begin{itemize}
+\item les orbitales mol\'eculaires SCF monocentriques de Moccia ;
+\item une moyenne analytique sur les orientations ;
+\item des charges effectives d\'eduites du potentiel de Hartree, avec une correction
+  d'auto-interaction pour l'\'electron \'eject\'e.
+\end{itemize}
+
+Pour \NH, le pic binaire est bien reproduit. Le pic de recul est sous-estim\'e d'un facteur 5 \`a 10.
+Nous montrons que ce d\'efaut provient de l'onde de l'\'electron \'eject\'e, qui ne contient pas la
+r\'etrodiffusion par le c\oe ur ionique. Nous proposons une onde distordue pour cet \'electron.
+\todo{Mettre \`a jour le r\'esum\'e apr\`es les calculs \CH, PCI et charge constante.}
+\end{abstract}
+
+\newpage
 \tableofcontents
 \newpage
 
 %=====================================================================
 \section{Introduction}
 %=====================================================================
-Electron-impact ionization is a basic process in collision physics. It is also a key input for:
-\begin{itemize}
-\item plasma modelling;
-\item atmospheric and astrophysical chemistry;
-\item radiation--matter interaction, where low-energy secondary electrons produced by ionizing
-  radiation cause further ionization and fragmentation of biomolecules.
-\end{itemize}
-Kinematically complete $(e,2e)$ experiments measure the triple differential cross section (TDCS).
-The TDCS is sensitive both to the structure of the target and to the dynamics of the three
-charged particles in the final state.
+The theoretical study of collisions between electrons and matter is one of the fundamental
+problems of atomic physics.
 
-Theoretical descriptions form a hierarchy of approximations:
+\textbf{Applications.} Among the possible collision processes, single ionization by electron
+impact plays a central role in:
 \begin{itemize}
-\item the plane-wave Born approximation (PWBA);
-\item distorted-wave methods (DWBA, M3DW);
-\item three-Coulomb-wave models (3C or BBK)~\cite{Brauner1989}, which treat the three two-body
-  Coulomb interactions of the final state on an equal footing.
+\item fundamental collision physics~\cite{McCarthy1991};
+\item plasma physics~\cite{Bartschat2016};
+\item living systems~\cite{Sanche2005};
+\item atmospheric physics~\cite{Avillez2019};
+\item radiation--matter interaction~\cite{Alizadeh2015}, where low-energy secondary electrons
+  produced by ionizing radiation cause further ionization, excitation and fragmentation of
+  biomolecules.
 \end{itemize}
-The 3CWZ model~\cite{Bechane2024,Tamin2024,Zaidi2024} replaces the constant charges of the 3C
-model by a position-dependent effective charge $Z(r)$. This charge interpolates between the
-nuclear charge near the nucleus and the ionic charge far from it. It has improved the description
-of atomic targets.
 
-Molecules add several difficulties:
+\textbf{The many-body problem.} In principle the electron--target system is fully described by
+the many-body Schr\"odinger equation. Even for simple atoms this equation has no exact
+analytical solution, because the electron--electron repulsion couples the electronic motions.
+Since the work of Hartree and Fock, the exact $N$-body problem has been replaced by an effective
+problem in which each electron moves in a mean potential created by the nucleus and the other
+electrons. This picture describes bound states well. Collisions are harder: an ionizing event
+has three charged particles in the final state (the scattered electron, the ejected electron and
+the residual ion), all coupled by long-range Coulomb forces. No exact numerical or analytical
+solution of this problem exists, so approximate models remain necessary both to interpret
+experiments and to predict cross sections.
+
+\textbf{$(e,2e)$ experiments.} In kinematically complete experiments, the scattered and ejected
+electrons are detected in coincidence~\cite{Ehrhardt1969,LahmamBennani1991}. They measure the
+triple differential cross section (TDCS), which is the most detailed probe of the ionization
+dynamics. The TDCS is sensitive to:
 \begin{itemize}
-\item the potential is multi-centre and non-spherical;
-\item the orientation of the molecule is random;
-\item the orbital structure is more complex.
+\item the electronic structure of the target;
+\item the post-collision interaction (PCI) between the two outgoing electrons;
+\item the distortion of the electron waves by the target field.
 \end{itemize}
-\CH{} and \NH{} are ten-electron hydrides whose C--H and N--H bonds are building blocks of
-biological molecules. \CH{} is nearly spherical. \NH{} is more anisotropic and has a permanent
-dipole moment.
 
-The objectives of the protocol were:
+\textbf{The 3CWZ model.} Theoretical descriptions form a hierarchy of approximations
+(Section~\ref{sec:models}). Within it, the three-Coulomb-wave (3C or BBK)
+model~\cite{Brauner1989} treats the three two-body Coulomb interactions of the final state on an
+equal footing. The 3CWZ model~\cite{Bechane2024,Tamin2024,Zaidi2024} replaces the constant
+charges of the 3C model by a position-dependent effective charge $Z(r)$. This charge goes from
+the nuclear charge near the nucleus to the ionic charge far from it, which accounts for
+electronic screening. The model has improved the description of atomic targets.
+
+\textbf{Molecular targets.} Molecules add four difficulties:
 \begin{itemize}
-\item[O1.] adapt the 3CWZ formalism to molecular targets with the one-centre orbitals of Moccia,
-  including $Z(r)$ for each orbital;
-\item[O2.] compute TDCS for the orbitals of \CH{} and \NH{} under various kinematics;
-\item[O3.] study the post-collision interaction (PCI) by comparing results with and without the
-  electron--electron factor $C_{ab}$;
-\item[O4.] validate the model against the available experimental and theoretical data.
+\item the potential is not spherical;
+\item the target has several centres;
+\item the molecular orientation is random and must be averaged;
+\item the molecular orbitals are complex.
+\end{itemize}
+The choice of \CH{} and \NH{} answers both fundamental and applied interests. Both are
+ten-electron hydrides. Their C--H and N--H bonds are building blocks of biological, atmospheric
+and astrophysical molecules~\cite{Pimblott2007,Janev2002,Herbst2009}.
+\begin{itemize}
+\item Methane, with tetrahedral symmetry and a nearly spherical potential, is a favourable case.
+  Several multipolar terms vanish by symmetry in the one-centre representation.
+\item Ammonia has lower symmetry ($C_{3v}$) and a permanent dipole moment. It is more anisotropic
+  and a more demanding test of the model.
+\end{itemize}
+
+\textbf{Objectives.} The objectives of the protocol were:
+\begin{itemize}
+\item[O1.] adapt the 3CWZ formalism to molecular targets using the one-centre wave functions of
+  Moccia, including the variable charge $Z(r)$ of each molecular orbital;
+\item[O2.] compute the TDCS for the single ionization of the orbitals of \CH{} and \NH{} for
+  various kinematics;
+\item[O3.] study the post-collision interaction by comparing results with and without the
+  electron--electron factor $C_{12}$;
+\item[O4.] validate the molecular 3CWZ results against the available experimental and theoretical
+  data~\cite{LahmamBennani2009,Isik2016,Chaluvadi2014,Rejoub2001,Nixon2013}.
 \end{itemize}
 The expected outcomes were to show what the variable charge contributes and to delimit the domain
-of validity of the model for molecules.
+of validity of the 3CWZ model for electron--molecule collisions.
 
-The report is organised as follows:
+\textbf{Plan of the report.}
 \begin{itemize}
-\item Section~\ref{sec:theory}: the formalism;
-\item Section~\ref{sec:numerics}: the numerical implementation and its validation;
-\item Section~\ref{sec:results}: the results;
-\item Section~\ref{sec:discussion}: the origin of the recoil-peak deficit and the domain of validity;
+\item Section~\ref{sec:background}: theoretical background on electron--atom ionization and the
+  3CWZ final state.
+\item Section~\ref{sec:molecule}: extension to molecules (Moccia orbitals, orientation average,
+  transition amplitude).
+\item Section~\ref{sec:zeff}: the variable effective charge.
+\item Section~\ref{sec:numerics}: numerical implementation, validation and numerical domain of
+  validity.
+\item Section~\ref{sec:results}: results for \NH.
+\item Section~\ref{sec:discussion}: origin of the recoil-peak deficit and proposed improvement.
 \item Section~\ref{sec:conclusion}: conclusions and perspectives.
 \end{itemize}
-Atomic units are used throughout unless stated otherwise.
+Atomic units ($\hbar=m_e=e=1$) are used throughout unless stated otherwise.
 
 %=====================================================================
-\section{Theory}\label{sec:theory}
+\section{Theoretical background}\label{sec:background}
 %=====================================================================
-\subsection{Kinematics and cross section}
-We consider $e^-(\mathbf k_i)+M\to M^++e^-(\mathbf k_s)+e^-(\mathbf k_e)$, with
+\subsection{Kinematics of the $(e,2e)$ reaction}
+An electron of momentum $\bk_i$ ionizes a target $M$ in its ground state:
 \begin{equation}
-E_i=E_s+E_e+I_n,\qquad \mathbf K=\mathbf k_i-\mathbf k_s,\qquad \mathbf q=\mathbf K-\mathbf k_e ,
+e^-(\bk_i)+M\longrightarrow M^++e^-(\bk_s)+e^-(\bk_e),
+\end{equation}
+where $\bk_s$ and $\bk_e$ are the momenta of the scattered and ejected electrons.
+Energy and momentum conservation give
+\begin{equation}
+E_i=E_s+E_e+I_n,\qquad \bk_i=\bk_s+\bk_e+\mathbf q,
 \end{equation}
 where:
 \begin{itemize}
+\item $E_\alpha=k_\alpha^2/2$ are the kinetic energies;
 \item $I_n$ is the binding energy of the ionized orbital;
-\item $\mathbf K$ is the momentum transfer;
-\item $\mathbf q$ is the recoil momentum of the ion.
+\item $\mathbf q$ is the momentum taken by the residual ion.
 \end{itemize}
-The TDCS is
+Two combinations govern the dynamics:
+\begin{equation}
+\mathbf K=\bk_i-\bk_s \quad\text{(momentum transfer)},\qquad
+\mathbf q=\mathbf K-\bk_e\quad\text{(recoil momentum)} .
+\end{equation}
+In asymmetric kinematics ($E_s\gg E_e$) the TDCS, as a function of the ejection angle, shows two
+lobes:
+\begin{itemize}
+\item the \emph{binary peak}, near the direction of $\mathbf K$. The target electron is knocked
+  out in a single binary collision with the projectile.
+\item the \emph{recoil peak}, near $-\mathbf K$. The ejected electron is in addition
+  back-scattered by the residual ion, which takes the recoil momentum.
+\end{itemize}
+
+\subsection{Triple differential cross section}
+The TDCS is the probability of detecting the scattered electron in $d\Omega_s$ and the ejected
+electron in $d\Omega_e$ with energy in $dE_e$~\cite{Byron1989}:
 \begin{equation}
 \sigma^{(3)}=\frac{d^3\sigma}{d\Omega_s\,d\Omega_e\,dE_e}=(2\pi)^4\frac{k_sk_e}{k_i}\,|T_{fi}|^2 .
+\label{eq:tdcs}
 \end{equation}
-At the energies considered here ($E_s\gg E_e$), exchange is neglected and $T_{fi}=T_{dir}$.
-\todo{If the low-energy data of Nixon \emph{et al.}~\cite{Nixon2013} are analysed, include the
-exchange amplitude. Check the factor $\tfrac12$ of the spin average:
-$\tfrac12\left(|T_d|^2+|T_e|^2+|T_d-T_e|^2\right)$.}
+\begin{itemize}
+\item The factor $k_sk_e/k_i$ is the phase-space density of the two outgoing electrons.
+\item All the dynamics is contained in the transition matrix element, written in the first Born
+  approximation as
+\end{itemize}
+\begin{equation}
+T_{fi}=\langle\Psi_f|V_P|\Psi_i\rangle .
+\end{equation}
+Here $\Psi_i$ is the initial state (incident wave times bound orbital), $\Psi_f$ is the final
+state, and $V_P$ is the projectile--target interaction:
+\begin{equation}
+V_P=-\frac{Z_T}{r_0}+\sum_{j=1}^{N}\frac{1}{|\br_0-\br_j|}.
+\label{eq:vp}
+\end{equation}
+In this expression, $\br_0$ is the projectile coordinate, $\br_j$ are the coordinates of the $N$
+target electrons, and $Z_T$ is the nuclear charge. In the frozen-core, one-active-electron
+approximation it reduces to
+\begin{equation}
+V_P=-\frac1{r_0}+\frac1{r_{01}},\qquad r_{01}=|\br_0-\br_1| ,
+\label{eq:vfc}
+\end{equation}
+where $\br_1$ is the coordinate of the active electron.
+
+When the two outgoing electrons have comparable energies, they cannot be identified. The TDCS
+then includes the exchange amplitude~\cite{Madison2010}:
+\begin{equation}
+\sigma^{(3)}=(2\pi)^4\frac{k_sk_e}{k_i}\,\tfrac12\Big[|T_{dir}|^2+|T_{exc}|^2+|T_{dir}-T_{exc}|^2\Big],
+\end{equation}
+In $T_{exc}$, the roles of $\br_0$ and $\br_1$ in the final state are interchanged. For the
+asymmetric kinematics studied here ($E_s=500$~eV $\gg E_e$), exchange is negligible and
+$T_{fi}=T_{dir}$.
+\todo{The 2nd-quarter report writes this formula without the factor $\tfrac12$. Check which
+convention is used in the atomic 3CWZ papers (the factor does not affect relative TDCS).}
+
+\subsection{Hierarchy of theoretical models}\label{sec:models}
+Table~\ref{tab:models} summarizes the main models used to describe ionization by electron impact.
+They are not opposed to each other. They are successive levels of approximation, each describing
+the interactions of the process more realistically.
+
+\begin{table}[H]\centering\small
+\caption{Theoretical approaches to electron-impact ionization (adapted from the protocol).}\label{tab:models}
+\begin{tabular}{p{2.8cm}p{6.2cm}p{5.2cm}}\toprule
+Model & Physical principle & Main limitation\\\midrule
+PWBA~\cite{Bote2008} & Incident and outgoing electrons are plane waves, as if they did not feel the target field & Neglects distortion; valid mainly at high energy\\
+1CW~\cite{DalCappello1984,Rezkallah2011} & Plane waves for the projectile; Coulomb wave ($Z=1$) for the ejected electron & Constant charge; no PCI; no projectile distortion\\
+DWBA, M3DW~\cite{Gao2005,Madison2010,Xu2012} & Electrons described by distorted waves, numerical solutions in the target potential & PCI treated approximately\\
+3C or BBK~\cite{Brauner1989,Garibotti1980} & The three final-state particles are Coulomb waves; all three Coulomb interactions included & Constant effective charges; screening not represented\\
+3CWZ~\cite{Bechane2024,Tamin2024,Zaidi2024} & As 3C, with a variable effective charge $Z(r)$ that reproduces electronic screening & Higher numerical cost; molecular extension more delicate\\\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{The 3CWZ final state}
-The final state is the product of three Coulomb waves:
+The 3CWZ model builds the final state as the product of three Coulomb waves, one for each
+two-body interaction of the exit channel:
+\begin{enumerate}
+\item scattered electron -- residual ion: $\phi_s(Z_s,\bk_s,\br_0)$;
+\item ejected electron -- residual ion: $\phi_e(Z_e,\bk_e,\br_1)$;
+\item scattered electron -- ejected electron (PCI): $C_{se}(\bk_{se},\br_{01})$.
+\end{enumerate}
 \begin{equation}
-\Psi_f=\phi^-_s(\mathbf k_s,\mathbf r_0)\,\phi^-_e(\mathbf k_e,\mathbf r_1)\,C^-_{se}(\mathbf k_{se},\mathbf r_{01}),
-\qquad \mathbf k_{se}=\tfrac12(\mathbf k_s-\mathbf k_e),
+\Psi_f=\phi^-_s(\bk_s,\br_0)\,\phi^-_e(\bk_e,\br_1)\,C^-_{se}(\bk_{se},\br_{01}).
 \end{equation}
-Each electron--ion wave has the form
+Each electron--ion wave is the regular Coulomb wave in parabolic
+coordinates~\cite{Landau1981,Abramowitz1972}:
 \begin{equation}
-\phi^{\pm}_c(\mathbf k,\mathbf r)=(2\pi)^{-3/2}\,e^{\pi\alpha(r)/2}\,\Gamma\!\left(1\mp i\alpha(r)\right)
-e^{i\mathbf k\cdot\mathbf r}\,{}_1F_1\!\left(\pm i\alpha(r);1;\pm i(kr\mp\mathbf k\cdot\mathbf r)\right),
-\qquad \alpha(r)=\frac{Z(r)}{k}.
-\label{eq:cwz}
+\phi_\alpha(Z_\alpha,\bk_\alpha,\br)=(2\pi)^{-3/2}e^{-\pi\eta_\alpha/2}\,\Gamma(1+i\eta_\alpha)\,
+e^{i\bk_\alpha\cdot\br}\,{}_1F_1\!\big(i\eta_\alpha;1;-i(k_\alpha r+\bk_\alpha\cdot\br)\big),
+\qquad \eta_\alpha=-\frac{Z_\alpha}{k_\alpha}.
+\label{eq:cw}
+\end{equation}
+This function is the exact solution of the one-electron Schr\"odinger equation in a pure Coulomb
+field of constant charge $Z$:
+\begin{equation}
+\Big[-\tfrac12\nabla^2-\frac{Z}{r}\Big]\psi(\br)=E\,\psi(\br).
+\label{eq:schr}
+\end{equation}
+The key step of the 3CWZ model with respect to the 3C model is to replace the constant charges by
+radially variable charges. The Sommerfeld parameter becomes position-dependent:
+\begin{equation}
+\eta_\alpha(r)=-\frac{Z_\alpha(r)}{k_\alpha}.
+\label{eq:etar}
 \end{equation}
 \begin{itemize}
-\item The effective charge $Z(r)$ goes to 1 at large $r$ for the scattered and ejected electrons,
-  and to 0 for the incident electron (neutral target).
-\item The incident wave $\phi^+_i(\mathbf k_i,\mathbf r_0)$ uses the neutral-target charge.
-\item The factor $C_{se}$ describes the electron--electron interaction (PCI), with
-  $\alpha_{se}=-1/(2k_{se})$.
+\item The aim is that the wave feels the bare nuclear charge near the nucleus ($r\to0$) and the
+  residual ionic charge far from it ($r\to\infty$).
+\item The incident electron moves in the field of the neutral target. Its wave
+  $\phi^+_i(Z_i,\bk_i,\br_0)$ uses the neutral-target charge, which vanishes at large distance.
 \end{itemize}
 
-In the frozen-core, one-active-electron approximation the interaction is
-$V=-1/r_0+1/r_{01}$, and the direct amplitude is
+The electron--electron interaction (PCI) is described by the Coulomb factor~\cite{Brauner1989}
 \begin{equation}
-T_{dir}=\Big\langle\Psi_f\Big|\frac1{r_{01}}-\frac1{r_0}\Big|\phi^+_i\,\Phi\Big\rangle=T^1-T^0 .
+C_{se}(\br_{01})=e^{-\pi\eta_{se}/2}\,\Gamma(1+i\eta_{se})\,
+{}_1F_1\!\big(i\eta_{se};1;-i(k_{se}r_{01}+\bk_{se}\cdot\br_{01})\big),\qquad
+\bk_{se}=\tfrac12(\bk_s-\bk_e),\quad \eta_{se}=\frac{1}{2k_{se}}.
 \end{equation}
+
+The squared normalization factors of the outgoing waves are the Gamow factors
+\begin{equation}
+N_\alpha=\big|e^{-\pi\eta_\alpha/2}\Gamma(1+i\eta_\alpha)\big|^2=\frac{2\pi\eta_\alpha}{e^{2\pi\eta_\alpha}-1},
+\label{eq:gamow}
+\end{equation}
+evaluated with the asymptotic charges. They multiply the TDCS.
+
+\textbf{Asymptotic conditions.} The variable charges reach fixed values at large distance:
+\begin{equation}
+\lim_{r\to\infty}Z_s(r)=1,\qquad \lim_{r\to\infty}Z_e(r)=1,\qquad \lim_{r\to\infty}Z_i(r)=0 ,
+\label{eq:asym}
+\end{equation}
+so that the waves satisfy the standard Coulomb boundary conditions.
+
+%=====================================================================
+\section{Extension to molecular targets}\label{sec:molecule}
+%=====================================================================
+\subsection{Difficulties of the molecular case}
+Compared with atoms, molecules add four difficulties:
 \begin{itemize}
-\item The six-dimensional integrals are made separable by a Fourier representation of $C_{se}$.
-\item Each wave is split into a $Z=1$ (or $Z=0$) Coulomb part, which is integrated analytically,
-  and a short-range correction confined to $r<d$, which is integrated numerically.
-\item The cut-off is $d=4$ a.u. It is justified by $Z_{ion}(4)=1.011$ (Section~\ref{sec:zr}).
+\item a non-spherical potential;
+\item several centres;
+\item the molecular orientation, which must be taken into account;
+\item the complex structure of the molecular orbitals.
 \end{itemize}
-The full derivation is given in the 2nd-quarter report.
-
-\subsection{Molecular target and orientation average}
-The molecular orbitals are the one-centre SCF orbitals of Moccia~\cite{Moccia1964a,Moccia1964b}.
-They are expanded on Slater functions centred on the heavy atom:
-\begin{equation}
-\Phi(\mathbf r)=\sum_j c_j\,\frac{(2\zeta_j)^{n_j+1/2}}{\sqrt{(2n_j)!}}\,r^{n_j-1}e^{-\zeta_jr}\,S_{l_jm_j}(\hat{\mathbf r}),
-\end{equation}
-where $S_{lm}$ are real spherical harmonics. For \NH{} we use Table~I of Moccia~II: pyramidal
-geometry, $R_{\rm N-H}=1.928$ a.u., $\theta=108.9^\circ$, with the valence orbitals \atwo, 1e and
-\aone{} (vertical ionization energies 27.0, 16.4 and 10.85 eV).
-
-The amplitude is linear in the orbital. Each orbital is therefore split into parts $g$ of given
-$(l_g,m_g)$, $\Phi=\sum_gR_g(r)S_{l_gm_g}$. The orthogonality of the rotation matrices,
-\begin{equation}
-\frac1{8\pi^2}\int d\Omega_{\rm Euler}\,D^{l}_{\mu m}D^{l'*}_{\mu'm'}=\frac{\delta_{ll'}\delta_{mm'}\delta_{\mu\mu'}}{2l+1},
-\end{equation}
-then gives the orientation-averaged TDCS exactly:
-\begin{equation}
-\langle\sigma^{(3)}\rangle=(2\pi)^4\frac{k_sk_e}{k_i}\sum_g\frac{1}{2l_g+1}\sum_{\mu=-l_g}^{l_g}\big|T[R_gY_{l_g\mu}]\big|^2 .
-\end{equation}
-
-\subsection{Variable effective charge}\label{sec:theory-z}
-Following the 3rd-quarter report, $Z(r)=r\,V_{\rm total}(r)$, where $V_{\rm total}$ is the
-monopole ($L=0$) part of the electrostatic potential of the target. It has three contributions:
+In particular, a standard multi-centre LCAO description of the target leads to multi-centre
+integrals that are very hard to evaluate in the collision amplitude. Two strategies overcome
+these difficulties:
 \begin{itemize}
-\item the heavy nucleus;
-\item the Hartree potential of the SCF electron density;
-\item the hydrogen nuclei, modelled as a uniform spherical shell of charge $n_H$ at radius $a_H$.
+\item the one-centre expansion (OCE) of Moccia, which restores a formal similarity with the
+  atomic case;
+\item the Euler-angle description of the molecular orientation.
 \end{itemize}
-For each pair of Slater functions of the same $(l,m)$ part, the screening integral has the
-closed form
+
+\subsection{One-centre SCF molecular orbitals of Moccia}
+Moccia~\cite{Moccia1964a,Moccia1964b} obtained SCF molecular orbitals for XH$_n$ molecules with
+all basis functions centred on the heavy atom X:
 \begin{equation}
-b(r)=\frac{p!}{c^{p+1}}-J_p(c,r)+r\,J_{p-1}(c,r),\qquad
-J_n(\alpha,r)=\int_r^\infty t^ne^{-\alpha t}dt ,
+\psi_{\rm MO}(\br)=\sum_j c_j\,f_{n_jl_jm_j}(\zeta_j,\br),\qquad
+f_{nlm}(\zeta,\br)=\frac{(2\zeta)^{n+1/2}}{\sqrt{(2n)!}}\,r^{n-1}e^{-\zeta r}\,S_{lm}(\theta,\varphi),
+\label{eq:sto}
 \end{equation}
-with $p=n_i+n_j$ and $c=\zeta_i+\zeta_j$. Then
+where $\zeta_j$ is the Slater exponent and $c_j$ the SCF coefficient. The real spherical harmonics
+are~\cite{Helgaker2000}
 \begin{equation}
-Z(r)=Z_N-\sum_{\rm MO}n_{\rm MO}\sum_{\rm pairs}c_ic_jN_iN_j\,b(r)+n_H\min(r/a_H,1).
+S_{lm}=\begin{cases}
+\dfrac{1}{\sqrt2}\left(Y_{l,-|m|}+(-1)^m Y_{l,|m|}\right), & m>0,\\[6pt]
+Y_{l0}, & m=0,\\[4pt]
+\dfrac{i}{\sqrt2}\left(Y_{l,-|m|}-(-1)^m Y_{l,|m|}\right), & m<0.
+\end{cases}
+\end{equation}
+\todo{Check this definition against the convention of Ref.~\cite{Helgaker2000} used in the code
+(sign and phase of the $m<0$ functions); the TDCS does not depend on it.}
+
+This choice is decisive for the 3CWZ model for two reasons:
+\begin{itemize}
+\item all the functions are centred on one point, so the multi-centre integrals of the
+  amplitude reduce to one-centre integrals;
+\item the expansion in spherical harmonics is directly compatible with the partial-wave
+  structure of the amplitude.
+\end{itemize}
+
+\paragraph{\NH.} We use Table~I of Moccia~II~\cite{Moccia1964b}: the ground state of pyramidal
+\NH{} in its calculated equilibrium configuration ($R_{\rm N-H}=1.9280$~a.u.,
+$\theta_{\rm HNH}=108.90^\circ$, total energy $E_T=-55.9748$~a.u.). The ten electrons occupy
+\begin{equation}
+(1a_1)^2(2a_1)^2(1e)^4(3a_1)^2 .
 \end{equation}
 \begin{itemize}
-\item \textbf{Incident electron:} sees the full density, so $Z\to Z_N-N_e+n_H=0$.
-\item \textbf{Ejected and scattered electrons:} one electron is removed from the ionized orbital
-  (self-interaction correction), so $Z\to1$.
+\item 1a$_1$ is the N 1s core.
+\item The valence orbitals are \atwo, 1e and \aone. The \aone{} orbital is the highest occupied
+  orbital (lone pair).
+\item The basis has five s functions, three p functions, two d functions and one f function.
+\end{itemize}
+Table~\ref{tab:moccia} lists the basis and the coefficients of the valence orbitals. The weights of
+the angular parts are:
+\begin{itemize}
+\item \aone: 96.4\% p, 3.3\% s, 0.04\% d;
+\item 1e: 93.6\% p, 5.8\% d;
+\item \atwo: 95.8\% s, 2.8\% p, 0.5\% d.
+\end{itemize}
+The f parts (0.2--0.9\%) are kept in the density but not in the ionization amplitude.
+
+\begin{table}[H]\centering\small
+\caption{Slater basis and coefficients of the valence orbitals of \NH{} (Moccia~II, Table~I).
+The 1e component shown is 1e$_x$; 1e$_y$ has the same radial coefficients with the partner
+harmonics.}\label{tab:moccia}
+\begin{tabular}{cccrrrr}\toprule
+$n$ & $l$ & $\zeta$ & \atwo & \aone & \multicolumn{2}{c}{1e$_x$}\\
+ & & & ($m=0$) & ($m=0$) & \multicolumn{2}{c}{}\\\midrule
+1 & 0 & 11.000 & 0.01157 & 0.00605 & & \\
+1 & 0 & 6.400  & $-0.23268$ & $-0.06461$ & & \\
+2 & 0 & 1.750  & 0.75114 & 0.24313 & & \\
+2 & 0 & 1.280  & 0.12576 & $-0.14177$ & & \\
+2 & 0 & 2.560  & 0.14793 & 0.07510 & & \\
+3 & 2 & 1.600  & $-0.07830$ & $-0.01440$ & $-0.18794$ $(m=1)$ & $-0.22929$ $(m=-2)$\\
+3 & 2 & 2.350  & 0.00659 & $-0.00699$ & 0.03710 $(m=1)$ & 0.05282 $(m=-2)$\\
+2 & 1 & 1.340  & $-0.14357$ & 0.95405 & 1.00304 $(m=1)$ & \\
+2 & 1 & 1.990  & $-0.01826$ & $-0.29504$ & $-0.28579$ $(m=1)$ & \\
+2 & 1 & 2.900  & $-0.00938$ & 0.40188 & 0.31169 $(m=1)$ & \\
+4 & 3 & 2.000  & 0.04992 & $-0.04098$ & $-0.04008$ $(m=1)$ & 0.06080 $(m=-2)$\\
+4 & 3 ($m=-3$) & 2.000 & $-0.08013$ & 0.02420 & & \\\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{\CH.} We use the orbitals of Moccia~I~\cite{Moccia1964a} with $R_{\rm C-H}=2.08$~a.u.
+The 1t$_2$ orbital (highest occupied orbital) contains p, d and f parts.
+
+\subsection{Molecular orientation and Euler angles}
+In a gas-phase experiment the molecules are randomly oriented. The collision is, however, most
+conveniently described in the molecular frame, where the potential and the orbitals have a
+fixed form. The Euler angles $(\alpha,\beta,\gamma)$ connect the two frames:
+\begin{itemize}
+\item \emph{Forward transformation:} for a given orientation, a vector of the molecular frame is
+  rotated into the laboratory frame.
+\item \emph{Inverse transformation:} the measured momenta, known in the laboratory frame, are
+  rotated into the molecular frame to compute the amplitude.
+\end{itemize}
+For a linear molecule two angles fix the axis. For non-linear molecules such as \CH{} and \NH,
+the third angle $\gamma$ (rotation about the principal axis) matters too.
+
+For a fixed orientation, the cross section is fourfold differential:
+\begin{equation}
+\sigma^{(4)}=\frac{d^4\sigma}{d\Omega_{\rm Euler}\,d\Omega_s\,d\Omega_e\,dE_e},\qquad
+d\Omega_{\rm Euler}=\sin\beta\,d\alpha\,d\beta\,d\gamma ,
+\end{equation}
+The measured TDCS is its average over all orientations:
+\begin{equation}
+\sigma^{(3)}_{\rm molecule}=\frac1{8\pi^2}\int\sigma^{(4)}\,d\Omega_{\rm Euler}.
+\end{equation}
+The average is done analytically with the orthogonality of the Wigner matrices~\cite{Davydov1976,Champion2006}:
+\begin{equation}
+\frac1{8\pi^2}\int d\Omega_{\rm Euler}\,D^{l}_{\mu m}(\alpha,\beta,\gamma)\,D^{l'*}_{\mu'm'}(\alpha,\beta,\gamma)
+=\frac{\delta_{ll'}\delta_{mm'}\delta_{\mu\mu'}}{2l+1}.
+\label{eq:wigner}
+\end{equation}
+
+\paragraph{Consequence for the TDCS.} The amplitude is linear in the orbital. We split the
+ionized orbital into its angular parts $g$:
+\begin{equation}
+\Phi(\br)=\sum_g R_g(r)\,S_{l_gm_g}(\hat\br),\qquad R_g(r)=\sum_{j\in g}c_jN_jr^{n_j-1}e^{-\zeta_jr}.
+\end{equation}
+A rotation transforms each $S_{l_gm_g}$ into a combination of $Y_{l_g\mu}$ weighted by
+$D^{l_g}_{\mu m_g}$. Squaring and averaging with Eq.~(\ref{eq:wigner}) removes all the cross terms
+between different $(l,m)$ parts and between different $\mu$. The orientation-averaged TDCS is
+therefore an exact incoherent sum over channels:
+\begin{equation}
+\langle\sigma^{(3)}\rangle=(2\pi)^4\frac{k_sk_e}{k_i}\,N_eN_sN_{se}\,n_{\rm el}
+\sum_g\frac{1}{2l_g+1}\sum_{\mu=-l_g}^{l_g}\big|T[R_gY_{l_g\mu}]\big|^2 ,
+\label{eq:oave}
+\end{equation}
+where:
+\begin{itemize}
+\item $n_{\rm el}=2$ is the number of electrons per spatial orbital;
+\item $T[\chi]$ is the amplitude with the bound orbital replaced by the channel function $\chi$.
+\end{itemize}
+For the degenerate 1e level, the TDCS of one component is multiplied by 2.
+
+\subsection{Transition amplitude}
+With the frozen-core interaction (\ref{eq:vfc}), the direct amplitude is
+\begin{equation}
+T_{dir}=\Big\langle\phi^-_s\,\phi^-_e\,C^-_{se}\Big|\frac1{r_{01}}-\frac1{r_0}\Big|\phi^+_i\,\Phi\Big\rangle=T^1-T^0,
+\label{eq:tdir}
+\end{equation}
+\begin{align}
+T^1&=\int\phi^{-*}_s(\br_0)\,\phi^{-*}_e(\br_1)\,C^{-*}_{se}(\br_{01})\,\frac1{r_{01}}\,\phi^+_i(\br_0)\,\Phi(\br_1)\,d\br_0d\br_1 ,\\
+T^0&=\int\phi^{-*}_s(\br_0)\,\phi^{-*}_e(\br_1)\,C^{-*}_{se}(\br_{01})\,\frac1{r_0}\,\phi^+_i(\br_0)\,\Phi(\br_1)\,d\br_0d\br_1 .
+\end{align}
+These six-dimensional integrals are not separable: the factor $C_{se}$ couples the two electrons
+through $\br_{01}=\br_0-\br_1$.
+
+\paragraph{Fourier representation of $C_{se}$.} We use
+\begin{equation}
+C^{-*}_{se}(\br_{01})=\frac1{(2\pi)^{3}}\int d\bp\;e^{i\bp\cdot\br_{01}}
+\int d\br'\,e^{-i\bp\cdot\br'}\,C^{-*}_{se}(\br').
+\end{equation}
+Since $e^{i\bp\cdot\br_{01}}=e^{i\bp\cdot\br_0}e^{-i\bp\cdot\br_1}$, the amplitude becomes a
+three-dimensional integral over $\bp$ of products of one-electron integrals:
+\begin{align}
+T^1&=\frac1{(2\pi)^3}\int d\bp\;
+\underbrace{\int\phi^{-*}_s\phi^+_i\,e^{i\bp\cdot\br_0}d\br_0}_{\text{projectile}}\;
+\underbrace{\int\phi^{-*}_e\,\Phi\,e^{-i\bp\cdot\br_1}d\br_1}_{\text{ejected electron}}\;
+\underbrace{\int e^{-i\bp\cdot\br'}C^{-*}_{se}(\br')\frac{1}{r'}d\br'}_{\text{PCI}},\\
+T^0&=\frac1{(2\pi)^3}\int d\bp\;
+\int\phi^{-*}_s\phi^+_i\,\frac{e^{i\bp\cdot\br_0}}{r_0}d\br_0\;
+\int\phi^{-*}_e\,\Phi\,e^{-i\bp\cdot\br_1}d\br_1\;
+\int e^{-i\bp\cdot\br'}C^{-*}_{se}(\br')\,d\br'.
+\end{align}
+
+\paragraph{Separation of the short-range part.} The variable charges differ from their asymptotic
+values only in a finite region around the nucleus. Beyond a radius $d$, the waves reduce to
+Coulomb waves with constant charge ($Z=1$ for the outgoing electrons, $Z=0$, i.e.\ a plane wave,
+for the incident one). Each one-electron integral is therefore written as
+\begin{equation}
+\int_0^\infty\phi(Z(r))\cdots\,d\br=\int_{r<d}\big[\phi(Z(r))-\phi(Z_\infty)\big]\cdots\,d\br
++\int_0^\infty\phi(Z_\infty)\cdots\,d\br .
+\label{eq:split}
+\end{equation}
+\begin{itemize}
+\item The second term, with constant charge, is evaluated analytically~\cite{DalCappello1984,Brothers1984}.
+\item The first term, the short-range correction confined to $r<d$, is evaluated numerically.
+\item We use $d=4$~a.u. Section~\ref{sec:zeff} shows that $Z_{ion}(4)=1.011$, so the variable
+  charge has reached its asymptotic value there to 1\%.
 \end{itemize}
 
 %=====================================================================
-\section{Numerical implementation and validation}\label{sec:numerics}
+\section{The variable effective charge}\label{sec:zeff}
 %=====================================================================
-\subsection{Code}
-The code \texttt{nh3\_opt\_claude.for} generalizes the \CH{} 3CWZ code to any XH$_n$ target
-described by Slater-type one-centre orbitals. Its main features are:
-\begin{itemize}
-\item The target data (nuclear charge, proton shell, all occupied orbitals and their $(l,m)$
-  parts) are given in one routine. The ionized orbital is selected by a switch.
-\item $Z(r)$ is computed from these data for the neutral molecule and for the ion.
-\item The $Z=1$ parts of the ejected-electron integrals are analytic. The short-range corrections
-  ($r<d$) use Gauss--Legendre quadrature: 4 radial intervals $\times$ 10 points, and $10\times10$
-  angular points.
-\item The Fourier integral over $\mathbf p$ uses $60\times40\times40$ points, refined around
-  $|\mathbf p|=K$.
-\item In coplanar geometry, the mirror symmetry $y\to-y$ halves the cost.
-\item The code is parallelized with OpenMP. A coplanar angular distribution (61 ejection angles)
-  takes about 3~min on 4 cores.
-\end{itemize}
+This section summarizes and applies the derivation of the 3rd-quarter report.
 
-\subsection{Validation}
-\begin{itemize}
-\item With the \CH{} target, the code reproduces the original \CH{} code exactly.
-\item Analytic and numerical evaluations of the $Z=1$ ejected-electron integral agree to $10^{-7}$.
-\item The mirror-symmetric and full angular grids give identical results.
-\item All molecular orbitals are normalised to $1\pm10^{-5}$.
-\item $Z(r)$ reaches its asymptotic values 0 (neutral) and 1 (ion).
-\end{itemize}
+\subsection{Definition and limits}
+A charged particle moving through a molecule does not feel a bare point charge. It feels an
+effective charge equal to the full nuclear charge at the nucleus, which decreases at large
+distance as the electrons and the light nuclei come into play. We define it as the total
+electrostatic potential scaled by $r$:
+\begin{equation}
+Z_{\rm eff}(r)\equiv r\,V_{\rm total}(r),\qquad
+V_{\rm total}(r)=V_{\rm nucleus}(r)-V_{ee}(r)+V_{{\rm nuc},H}(r).
+\end{equation}
+For a point charge $Q$, $rV=Q$ exactly, so departures from a constant measure how far the target
+is from a point charge. The limits are
+\begin{equation}
+Z_{\rm eff}(r\to0)=Z_N,\qquad Z_{\rm eff}(r\to\infty)=Z_N-N_e+n_H ,
+\end{equation}
+where $N_e$ is the number of bound electrons and $n_H$ the number of hydrogen nuclei.
 
-\subsection{Options tested}
+\subsection{Hartree potential and monopole reduction}
+The electronic part is the Hartree potential of the SCF density~\cite{Szabo1996,Hartree1928}:
+\begin{equation}
+V_{ee}(\br)=\int\frac{\rho(\br')}{|\br-\br'|}\,d^3r',\qquad
+\rho(\br')=\sum_{\rm MO}n_{\rm MO}|\psi_{\rm MO}(\br')|^2 .
+\end{equation}
+The Coulomb kernel is expanded in Legendre polynomials~\cite{Jackson1998}:
+\begin{equation}
+\frac1{|\br-\br'|}=\sum_{L=0}^\infty\frac{r_<^L}{r_>^{L+1}}P_L(\cos\gamma).
+\end{equation}
+For $L\ge1$, every $Y_{LM}$ integrates to zero over the full solid angle. The spherical average
+therefore keeps only the monopole $L=0$:
+\begin{equation}
+r\,V_{ee}(r)=4\pi\int_0^r r'^2\rho_e(r')\,dr'+4\pi r\int_r^\infty r'\rho_e(r')\,dr' .
+\end{equation}
 \begin{itemize}
-\item \texttt{isr=1}: the projectile--core interaction $-1/r_0$ is replaced by the screened static
-  potential $-Z_{ion}(r_0)/r_0$, i.e.\ its short-range part is added.
-\item \texttt{iorth=1}: the ejected wave is Schmidt-orthogonalized to the ionized orbital, partial
-  wave by partial wave, before the amplitude is computed.
+\item The first term is the electronic charge enclosed within $r$: full screening.
+\item The second term is the partial screening by the electrons beyond $r$. It vanishes as
+  $r\to\infty$.
 \end{itemize}
+This is the shell-theorem result, now identified as the monopole component of the Hartree
+potential. It coincides with the definition of the protocol and of the 2nd-quarter report:
+$U(r)=\frac1{4\pi}\int V\,d\Omega=-Z(r)/r$.
 
-\subsection{Numerical domain of validity}\label{sec:conv}
-We repeated calculations with finer grids: 16 points per interval, 8 radial intervals for the
-projectile and 4 for the ejected electron. The default grids are accurate to about 20\% when both
-outgoing electrons are slow and the momentum transfer is small ($K\lesssim3$ a.u.). This holds,
-for example, for the El~Mir kinematics ($K\approx0.85$~a.u., $E_e=74$~eV). Outside this domain
-they are not accurate:
-\begin{itemize}
-\item for a 600~eV ejected electron (EMS kinematics), the TDCS changes by up to $+70\%$;
-\item at large momentum transfer ($\theta_s\gtrsim40^\circ$ at $E_i=500$~eV), the TDCS is
-  overestimated by factors up to 30.
-\end{itemize}
-Integrated cross sections, which sample large $K$, therefore need grids adapted to $K$.
-\todo{Implement $K$-adapted grids, or switch to the analytic $Z=1$ limit beyond $K\approx3$ a.u.,
-and repeat the convergence study.}
+\subsection{Density from Slater-type orbitals and selection rule}
+With the orbitals of Eq.~(\ref{eq:sto}), the density contains cross terms $f_i^*f_j$. Their
+angular integral is
+\begin{equation}
+\int S_{l_im_i}S_{l_jm_j}\,d\Omega=\delta_{l_il_j}\delta_{m_im_j},
+\end{equation}
+so only pairs of functions of the same $(l,m)$ contribute to the spherical average. Keeping the
+spherically averaged density and keeping the monopole Hartree term are the same approximation.
 
-%=====================================================================
-\section{Results}\label{sec:results}
-%=====================================================================
-\subsection{Effective charges}\label{sec:zr}
-\begin{figure}[h]\centering
-\includegraphics[width=0.92\linewidth]{figs/zr.png}
-\caption{Effective charge $Z(r)$ of \CH{} (1t$_2$ hole) and \NH{} (\aone{} hole) for the ejected
-electron (ion) and the incident electron (neutral molecule). The dotted line marks the
-X--H distance $a_H$.}\label{fig:zr}
+\subsection{Closed-form screening integral}
+For a pair $(i,j)$ of the same $(l,m)$, write $p=n_i+n_j$ and $c=\zeta_i+\zeta_j$. Its contribution
+is $c_ic_jN_iN_j\,b(r)$ with
+\begin{equation}
+b(r)=\int_0^rt^pe^{-ct}dt+r\int_r^\infty t^{p-1}e^{-ct}dt
+=\frac{p!}{c^{p+1}}-J_p(c,r)+r\,J_{p-1}(c,r),
+\end{equation}
+\begin{equation}
+J_n(\alpha,r)=\int_r^\infty t^ne^{-\alpha t}dt=\frac{n!}{\alpha^{n+1}}e^{-\alpha r}\sum_{k=0}^n\frac{(\alpha r)^k}{k!}.
+\end{equation}
+As $r\to0$, $b\to0$: there is no screening at the nucleus. As $r\to\infty$, $b$ saturates: the
+pair screens fully.
+
+\subsection{Light nuclei and final expression}
+The $n_H$ protons are modelled as a thin uniform spherical shell of charge $n_H$ at the X--H
+distance $a_H$~\cite{Jackson1998}:
+\begin{equation}
+Z_H(r)=n_H\min(r/a_H,1).
+\end{equation}
+This keeps only the spherically averaged ($L=0$) part of their potential, consistently with the
+monopole treatment of the electrons. Collecting the three contributions:
+\begin{equation}
+Z_{\rm eff}(r)=Z_N-\sum_{\rm MO}n_{\rm MO}\sum_{\text{same-}(l,m)\text{ pairs}}c_ic_jN_iN_j\,b(r)
++n_H\min(r/a_H,1).
+\label{eq:zfinal}
+\end{equation}
+
+\subsection{Incident and ejected electrons: self-interaction correction}
+The incident electron is distinct from the $N_e$ bound electrons and is screened by the full
+density:
+\begin{equation}
+Z^{\rm inc}_{\rm eff}(r\to\infty)=Z_N-N_e+n_H=0.
+\end{equation}
+The ejected electron comes from one of the occupied orbitals. Keeping the full density would let
+it be screened by its own charge, which is the self-interaction error of the Hartree
+approximation. Removing its own contribution,
+\begin{equation}
+\rho^{\rm ej}(\br')=\rho(\br')-|\psi_{\rm ionized}(\br')|^2 ,
+\end{equation}
+reduces the occupation of the ionized orbital by one. Then
+\begin{equation}
+Z^{\rm ej}_{\rm eff}(r\to\infty)=Z_N-(N_e-1)+n_H=1,
+\end{equation}
+and $Z^{\rm ej}_{\rm eff}(r)\ge Z^{\rm inc}_{\rm eff}(r)$ at every $r$. The scattered electron
+moves in the field of the same ion and uses the same charge. These are the asymptotic conditions
+of Eq.~(\ref{eq:asym}).
+
+\subsection{Results for \CH{} and \NH}\label{sec:zr}
+Table~\ref{tab:zparam} gives the parameters of the two molecules. Figure~\ref{fig:zr} and
+Table~\ref{tab:zr} show the charges computed by the code from Eq.~(\ref{eq:zfinal}).
+
+\begin{table}[H]\centering\small
+\caption{Parameters of the effective charge.}\label{tab:zparam}
+\begin{tabular}{lcc}\toprule
+ & \CH~\cite{Moccia1964a} & \NH~\cite{Moccia1964b}\\\midrule
+$Z_N$ & 6 (C) & 7 (N)\\
+$N_e$ & 10 & 10\\
+$n_H$ & 4 & 3\\
+$a_H$ (a.u.) & 2.08 & 1.928\\
+Occupied MOs & 1a$_1$, 2a$_1$, 1t$_2$ & 1a$_1$, 2a$_1$, 1e, 3a$_1$\\
+$Z^{\rm inc}(\infty)$ / $Z^{\rm ej}(\infty)$ & 0 / 1 & 0 / 1\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.95\linewidth]{figs/zr.png}
+\caption{Effective charge of \CH{} (1t$_2$ hole) and \NH{} (\aone{} hole): ejected electron (ion,
+solid) and incident electron (neutral, dashed). The dotted line marks $a_H$.}\label{fig:zr}
 \end{figure}
 
-Figure~\ref{fig:zr} and Table~\ref{tab:zr} show the computed charges.
-\begin{itemize}
-\item Both curves start from $Z_N$: 6 for \CH, 7 for \NH.
-\item They fall steeply inside $r\approx1$~a.u.
-\item They show a local maximum at the X--H distance, where the proton shell stops contributing.
-\item They reach their asymptotes by $r\approx4$~a.u.
-\item The ejected-electron charge lies above the incident one at every $r$; this is the
-  self-interaction correction.
-\item The three \NH{} orbitals give nearly identical $Z_{ion}(r)$ (within 0.05).
-\end{itemize}
-
-\begin{table}[h]\centering\small
-\caption{$Z(r)$ for \NH{} from the code.}\label{tab:zr}
+\begin{table}[H]\centering\small
+\caption{$Z_{\rm eff}(r)$ of \NH{} computed by the code.}\label{tab:zr}
 \begin{tabular}{lcccccccc}\toprule
 $r$ (a.u.) & 0 & 0.5 & 1.0 & 1.5 & 2.0 & 2.5 & 3.0 & 4.0\\\midrule
 incident (neutral) & 7.000 & 2.690 & 1.113 & 0.549 & 0.541 & 0.227 & 0.091 & 0.013\\
@@ -309,218 +673,696 @@ ejected (\aone{} hole) & 7.000 & 3.094 & 1.806 & 1.402 & 1.474 & 1.198 & 1.079 &
 \end{tabular}
 \end{table}
 
-\subsection{\NH: TDCS in asymmetric coplanar kinematics}
-We consider the conditions of El~Mir \emph{et al.}~\cite{ElMir2020}: $E_s=500$~eV, $\theta_s=-6^\circ$,
-and $E_e=74$~eV. The incident energy follows from $E_i=E_s+E_e+I_n$. The experimental data were
-digitized from the published figures. Being on a relative scale, each calculation is scaled to the
-maximum of the experimental binary peak. The momentum transfer points at $\theta_K\approx46$--$50^\circ$.
+The computed curves show every feature expected from the derivation:
+\begin{itemize}
+\item \textbf{Common origin:} $Z(0)=Z_N$ (6 and 7). The fall is steeper for \NH, whose larger
+  nuclear charge binds the core density more tightly.
+\item \textbf{Fast screening:} by $r=1$~a.u., $Z^{\rm ej}$ is already 1.8 for \NH.
+\item \textbf{Local maximum at $r=a_H$:} $Z^{\rm ej}=1.53$ and $Z^{\rm inc}=0.61$ for \NH;
+  $Z^{\rm ej}=1.63$ and $Z^{\rm inc}=0.73$ for \CH.
+  \begin{itemize}
+  \item For $r<a_H$ the rising proton-shell term partly offsets the falling screening term.
+  \item At $r=a_H$ the proton term stops rising, so $Z$ turns over.
+  \item In the shell model the maximum is a kink.
+  \end{itemize}
+\item \textbf{Asymptotes 0 and 1:} reached by $r\approx4$~a.u. This justifies the cut-off $d=4$~a.u.
+  of Eq.~(\ref{eq:split}).
+\item \textbf{Ejected above incident} at every $r$: this is the signature of the removed
+  self-interaction density.
+\item The three \NH{} valence orbitals give nearly the same $Z^{\rm ej}(r)$ (within 0.05).
+\end{itemize}
 
-\begin{figure}[h]\centering
+\paragraph{What the model omits.}
+\begin{itemize}
+\item The $L\ge1$ multipoles of the potential. For \NH{} these include its permanent dipole and
+  the non-spherical field of the protons.
+\item Exchange and correlation.
+\item The polarization of the target by the incoming electron.
+\end{itemize}
+$Z_{\rm eff}$ is therefore a local, direct, monopole-truncated mean-field potential.
+
+%=====================================================================
+\section{Numerical implementation and validation}\label{sec:numerics}
+%=====================================================================
+\subsection{Code structure}
+The code \texttt{nh3\_opt\_claude.for} generalizes the 3CWZ code for the 1t$_2$ orbital of
+\CH{} to any XH$_n$ target described by one-centre Slater orbitals.
+\begin{itemize}
+\item \textbf{Target:} one routine contains all the data: nuclear charge, proton shell, all
+  occupied orbitals with their $(l,m)$ parts, occupations of the neutral molecule and of the ion,
+  and the ionized orbital.
+\item \textbf{Effective charges:} computed from these data by Eq.~(\ref{eq:zfinal}) at the
+  radial nodes, for the neutral molecule (incident electron) and for the ion (scattered and
+  ejected electrons).
+\item \textbf{Analytic part:} the $Z=1$ part of the ejected-electron integral,
+  $\int\phi^{-*}_e(Z=1)\,R_g Y_{l\mu}\,e^{-i\bp\cdot\br}d\br$, is computed in closed form for s, p
+  and d functions of any $n$ and $\zeta$. The part that depends only on $|\bp|$ and $k_e$ is
+  computed once per point $\bp$.
+\item \textbf{Short-range corrections ($r<d$):} computed by Gauss--Legendre quadrature:
+  \begin{itemize}
+  \item projectile: 4 radial intervals $\times$ 10 points, and $10\times10$ points in
+    $(\theta,\varphi)$;
+  \item ejected electron: 1 radial interval $\times$ 10 points.
+  \end{itemize}
+  A factor $e^{-0.005\,r}$ regularizes the Coulomb integrals.
+\item \textbf{Fourier integral over $\bp$:} $60\times40\times40$ Gauss points, with interval
+  boundaries refined around $|\bp|=K$ and around the direction of $-\mathbf K$.
+\item \textbf{Mirror symmetry:} in coplanar geometry the wave of the ejected electron is
+  symmetric under $y\to-y$. Combining the $\pm\mu$ channels then halves the angular grid of the
+  ejected-electron correction:
+  \begin{equation}
+  A_\mu=\sum_{\rm half}(c_\mu+(-1)^\mu c_{-\mu})E^+,\quad B_\mu=\sum_{\rm half}(c_\mu-(-1)^\mu c_{-\mu})E^-,
+  \end{equation}
+  \begin{equation}
+  S_\mu=\tfrac12(A_\mu+B_\mu),\quad S_{-\mu}=(-1)^\mu\tfrac12(A_\mu-B_\mu).
+  \end{equation}
+\item \textbf{Parallelization:} OpenMP over the $\bp$ grid. A coplanar angular distribution of 61
+  ejection angles takes about 3~min on 4 cores.
+\end{itemize}
+
+\subsection{Validation}
+\begin{itemize}
+\item \textbf{Regression:} with the \CH{} 1t$_2$ target, the code reproduces the original \CH{}
+  code to 10 digits.
+\item \textbf{Analytic integrals:} the closed-form $Z=1$ ejected-electron integrals (s with
+  $n=1,2$; p with $n=2,3$; d with $n=3,4$; all $\mu$) agree with direct numerical integration to
+  $10^{-7}$.
+\item \textbf{Symmetry:} the mirror-symmetric path and the full angular grid give the same TDCS
+  to 10 digits (1e, with p and d channels up to $|\mu|=2$).
+\item \textbf{Target:} all orbitals of Table~I are normalized to $1\pm10^{-5}$; $Z(r)$ reaches 0
+  (neutral) and 1 (ion).
+\end{itemize}
+
+\subsection{Additional options}
+Two options were added to test the physics of the model.
+\begin{itemize}
+\item \texttt{isr=1}: the projectile--core interaction $-1/r_0$ of Eq.~(\ref{eq:vfc}) is replaced
+  by the screened static potential $-Z_{ion}(r_0)/r_0$. This adds its short-range part
+  $-(Z_{ion}(r_0)-1)/r_0$ for $r_0<d$, as in the BBKSR model of El~Mir
+  \emph{et al.}~\cite{ElMir2020}.
+\item \texttt{iorth=1}: the ejected wave is orthogonalized to the ionized orbital
+  (Section~\ref{sec:orth}).
+\end{itemize}
+
+\subsection{Numerical domain of validity}\label{sec:conv}
+We repeated calculations with finer grids: 16 points per interval, with 8 radial intervals for
+the projectile and 4 for the ejected electron.
+
+\begin{itemize}
+\item \textbf{Slow electrons, small $K$} ($E_e=74$~eV, $K\approx0.85$~a.u., the El~Mir
+  conditions): the TDCS changes by about 20\%. The shapes, and the conclusions drawn from them,
+  are unchanged.
+\item \textbf{Fast ejected electron} (600~eV, EMS kinematics): the TDCS changes by $-40\%$ to
+  $+70\%$ along the momentum profile (Table~\ref{tab:emsconv}). The default single radial interval
+  for the ejected electron cannot resolve a wave with $k_e=6.6$~a.u.\ over $r<4$~a.u.
+\item \textbf{Large momentum transfer} ($E_i=500$~eV, $E_e=150$~eV): the default grids
+  overestimate the TDCS by factors 12--30 at $\theta_s=68^\circ$ ($K\approx7$~a.u.). At
+  $\theta_s=120^\circ$ even the finer grid is not stable.
+\end{itemize}
+
+\begin{table}[H]\centering\small
+\caption{Ratio of the TDCS with finer grids to the TDCS with default grids.}\label{tab:emsconv}
+\begin{tabular}{lccccccc}\toprule
+\multicolumn{8}{l}{EMS, \aone, as a function of the relative azimuth $\Phi$}\\
+$\Phi$ & $0^\circ$ & $5^\circ$ & $10^\circ$ & $15^\circ$ & $20^\circ$ & $25^\circ$ & $30^\circ$\\
+fine/default & 0.74 & 1.30 & 1.48 & 1.67 & 1.53 & 1.03 & 0.59\\\midrule
+\multicolumn{8}{l}{DDCS, 1e, $E_e=150$~eV, for the five azimuths $0$--$180^\circ$}\\
+$\theta_s=10^\circ$ & \multicolumn{7}{l}{1.24, 0.74, 0.89, 1.19, 1.15}\\
+$\theta_s=68^\circ$ & \multicolumn{7}{l}{0.08, 0.04, 0.07, 0.03, 0.08}\\
+$\theta_s=120^\circ$ & \multicolumn{7}{l}{0.69, 0.10, 0.98, 0.74, 0.88}\\\bottomrule
+\end{tabular}
+\end{table}
+
+The default grids are therefore reliable (about 20\%) for slow outgoing electrons and
+$K\lesssim3$~a.u. This covers the asymmetric $(e,2e)$ kinematics of Section~\ref{sec:elmir}.
+\todo{Implement grids adapted to $K$ (radial points scaling with $Kd$ and $k_ed$), or switch to the
+analytic constant-charge limit beyond $K\approx3$~a.u., and repeat the convergence study before
+computing integrated cross sections.}
+
+%=====================================================================
+\section{Results for \NH}\label{sec:results}
+%=====================================================================
+\subsection{TDCS in asymmetric coplanar kinematics}\label{sec:elmir}
+\paragraph{Experimental conditions.} El~Mir \emph{et al.}~\cite{ElMir2020} measured the TDCS of the
+three valence orbitals of \NH{} in coplanar asymmetric geometry:
+\begin{itemize}
+\item scattered energy fixed at $E_s=500$~eV, scattering angle $\theta_s=-6^\circ$;
+\item ejected energy $E_e=37$ and 74~eV;
+\item the incident energy follows from $E_i=E_s+E_e+I_n$.
+\end{itemize}
+Table~\ref{tab:kin} gives the resulting kinematics at 74~eV. The experiment is on a relative
+scale, so each calculation is normalized to the maximum of the experimental binary peak. The
+data were digitized from the published figures. There are no experimental points between $160^\circ$
+and $200^\circ$.
+
+\begin{table}[H]\centering\small
+\caption{Kinematics at $E_s=500$~eV, $\theta_s=-6^\circ$, $E_e=74$~eV.}\label{tab:kin}
+\begin{tabular}{lccccc}\toprule
+Orbital & $I_n$ (eV) & $E_i$ (eV) & $K$ (a.u.) & $\theta_K$ & $-\mathbf K$\\\midrule
+\aone & 10.85 & 584.85 & 0.82 & $50.2^\circ$ & $230.2^\circ$\\
+1e    & 16.4  & 590.4  & 0.84 & $48.6^\circ$ & $228.6^\circ$\\
+\atwo & 27.0  & 601.0  & 0.88 & $45.7^\circ$ & $225.7^\circ$\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]\centering
 \includegraphics[width=0.66\linewidth]{figs/elmir_base.png}
-\caption{TDCS for the \atwo, 1e and \aone{} orbitals of \NH{} at $E_s=500$~eV, $\theta_s=-6^\circ$,
-$E_e=74$~eV: 3CWZ (line) and experiment~\cite{ElMir2020} (symbols).}\label{fig:elmir}
+\caption{TDCS of the \atwo, 1e and \aone{} orbitals of \NH{} at $E_s=500$~eV,
+$\theta_s=-6^\circ$, $E_e=74$~eV. Line: 3CWZ, normalized to the experimental binary maximum.
+Symbols: experiment~\cite{ElMir2020}.}\label{fig:elmir}
 \end{figure}
 
-\begin{table}[h]\centering\small
-\caption{Peak positions and binary-to-recoil ratios at $E_e=74$~eV.}\label{tab:br}
+\begin{table}[H]\centering\small
+\caption{Peak positions and binary-to-recoil ratio at $E_e=74$~eV. The recoil maximum is taken in
+$180$--$340^\circ$.}\label{tab:br}
 \begin{tabular}{llccc}\toprule
 Orbital & & binary peak & recoil peak & binary/recoil\\\midrule
 \aone & experiment & $54^\circ$ & $242^\circ$ & 2.1\\
-      & 3CWZ & $60^\circ$ & flat & 14.8\\
+      & 3CWZ & $60^\circ$ & flat (max.\ $198^\circ$) & 14.8\\
 1e    & experiment & $49^\circ$ & $240^\circ$ & 2.5\\
-      & 3CWZ & $54^\circ$ & flat & 23.4\\
+      & 3CWZ & $54^\circ$ & flat (max.\ $192^\circ$) & 23.4\\
 \atwo & experiment & $50^\circ$ & $230^\circ$ & 1.1\\
       & 3CWZ & $48^\circ$ & $246^\circ$ (weak) & 5.3\\\bottomrule
 \end{tabular}
 \end{table}
 
-Figure~\ref{fig:elmir} and Table~\ref{tab:br} show the following:
+\paragraph{Analysis.}
 \begin{itemize}
-\item The position and the front side of the binary peak are reproduced for all three orbitals.
-\item The recoil region is underestimated by a factor 5--10. So is the large-angle side of the
-  binary peak: at $\theta_e=120^\circ$, the 1e and \aone{} data are about 7 times above the model.
-\item For \atwo{} the model shows a dip at about $80^\circ$, the node of the 2s-like momentum
-  distribution, which the experiment does not show.
+\item \textbf{Binary peak.} Its position is reproduced within a few degrees: 48--60$^\circ$
+  against 49--54$^\circ$. The model is slightly too far forward for \aone{} and 1e. The front side
+  of the peak (25--60$^\circ$) follows the data. The Moccia orbitals, the first-order treatment of
+  the fast projectile and the kinematics are therefore adequate.
+\item \textbf{Large-angle side of the binary peak.} The model falls too fast after $90^\circ$. At
+  $\theta_e=120^\circ$, the 1e data are $\approx1\times10^{-16}$ and the model
+  $\approx1.5\times10^{-17}$ (same units after normalization), a factor of 7. The same holds for
+  \aone.
+\item \textbf{Recoil peak.} For \aone{} and 1e the model is a flat plateau 5--10 times below the
+  data, with no maximum near $-\mathbf K$. For \atwo{} it shows a weak maximum at $246^\circ$,
+  still 4--5 times too low.
+\item \textbf{\atwo{} structure.} The model has a dip near $80^\circ$ and a second maximum at
+  $105^\circ$, which the experiment does not show. \atwo{} is mainly N 2s, and its momentum
+  distribution has a node. The model shows this node too sharply.
 \end{itemize}
+The first two deficits have one cause: in the model, the ejected electron is not scattered enough
+by the ion. Every feature away from the binary direction requires the ion to deflect the
+ejected electron: the slow fall-off, the filling of the valley and the recoil peak.
+
 \todo{Digitize the $E_e=37$~eV data of~\cite{ElMir2020} and compare with the calculations already
-done at that energy.}
+done at that energy (files \texttt{NH3\_*\_Es500eV\_Ee37eV\_*.dat}).}
 
-\subsection{Short-range projectile potential and orthogonalization}
-\begin{figure}[h]\centering
-\includegraphics[width=0.49\linewidth]{figs/elmir_sr.png}\hfill
-\includegraphics[width=0.49\linewidth]{figs/elmir_orth.png}
-\caption{Left: 3CWZ without (dashed) and with (solid) the short-range projectile--core potential.
-Right: 3CWZ, orthogonalized ejected wave, and orthogonalized wave with the short-range potential.
-Same kinematics as Fig.~\ref{fig:elmir}.}\label{fig:srorth}
+\subsection{Short-range projectile--core potential}
+The frozen-core interaction keeps only the asymptotic charge of the core. With \texttt{isr=1} the
+projectile also feels the screened potential $-Z_{ion}(r_0)/r_0$ inside the molecule. In the
+amplitude this adds to $T^0$ a term with the full projectile waves weighted by
+$(Z_{ion}(r_0)-1)$, for $r_0<d$.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.62\linewidth]{figs/elmir_sr.png}
+\caption{3CWZ without (dashed) and with (solid) the short-range projectile--core potential.
+Same kinematics as Fig.~\ref{fig:elmir}.}\label{fig:sr}
 \end{figure}
 
-\textbf{Short-range potential (\texttt{isr=1}, Fig.~\ref{fig:srorth}, left).}
+The effect is shown in Fig.~\ref{fig:sr}:
 \begin{itemize}
-\item It raises the cross section at large angles, giving binary/recoil ratios of 0.98, 1.8 and
-  0.7 for \aone, 1e and \atwo{}.
-\item The rise is nearly isotropic, a shelf rather than a peak centred on $-\mathbf K$.
-\item It shifts the binary peak forward to 60--66$^\circ$ and distorts it for \atwo.
+\item \textbf{1e} gives the best agreement obtained. The binary peak is right and the curve from
+  $270^\circ$ to $335^\circ$ falls on the data. However, $130$--$200^\circ$ is filled by a plateau
+  that is too high, so the recoil appears as a broad shelf instead of a peak centred at $240^\circ$.
+\item \textbf{\aone:} the recoil becomes about 2 times too high and much too broad.
+\item \textbf{\atwo:} the binary peak loses its shape and moves to $66^\circ$. The curve is
+  almost flat from $60^\circ$ to $270^\circ$.
+\item \textbf{All orbitals:} the binary peak moves forward to 60--66$^\circ$.
 \end{itemize}
-The ejected Coulomb wave is not orthogonal to the bound orbital. The overlaps are 0.37 for the s
-part of \atwo, and 0.10 (s) and 0.18--0.20 (p) for \aone. Through these overlaps the
-projectile--core term produces this spurious isotropic contribution.
+Binary/recoil ratios: 0.98 (\aone), 1.8 (1e), 0.7 (\atwo).
 
-\textbf{Orthogonalization (\texttt{iorth=1}, Fig.~\ref{fig:srorth}, right).}
+The potential produces back-scattering, but nearly isotropic instead of a peak around $-\mathbf K$.
+This behaviour points to the non-orthogonality of the ejected wave to the bound orbital:
 \begin{itemize}
-\item It removes the shelf, and the \atwo{} binary peak recovers its shape.
-\item The recoil region drops back to about 10 times below the data.
-\end{itemize}
-The physical back-scattering contained in the 3CWZ ejected wave is therefore too weak.
-
-\subsection{\NH: electron momentum spectroscopy}
-As a test of the orbitals and of the high-energy limit, we computed the momentum profiles measured
-by Bawagan \emph{et al.}~\cite{Bawagan1988}: $E_0=1200$~eV$+I_n$, symmetric non-coplanar geometry,
-$\theta=45^\circ$, 600~eV each (Fig.~\ref{fig:ems}).
-\begin{itemize}
-\item The peak positions are reproduced (q $\approx$ 0.58, 0.1 and 0.57~a.u.), and so are the
-  shapes for \atwo{} and \aone.
-\item The 1e profile is about 1.5 times low above $q\approx1.3$~a.u. The paper's PWBA shows the
-  same, so the cause is the high-momentum content of the 1e orbital.
-\item The absolute values with the default grids are 0.57 of the PWBA of Rezkallah
-  \emph{et al.}~\cite{Rezkallah2011}. With finer grids, 3a$_1$ reaches 0.76; see Section~\ref{sec:conv}.
+\item If $\phi_e$ were an eigenfunction of the same Hamiltonian as $\Phi$, the first-order part of
+  $T^0$, proportional to $\langle\phi_a|Z/r_0|\phi_i\rangle\langle\phi_e|\Phi\rangle$, would
+  vanish.
+\item With a Coulomb wave it does not vanish. The short-range term multiplies it by
+  $Z_{ion}(r)-1$, which is up to 6 exactly where the s-like density is concentrated.
 \end{itemize}
 
-\begin{figure}[h]\centering
+\subsection{Orthogonalized ejected wave}\label{sec:orth}
+\paragraph{Method.} The standard cure is the Schmidt orthogonalization
+$\tilde\phi_e=\phi_e-\Phi\langle\Phi|\phi_e\rangle/\langle\Phi|\Phi\rangle$. The ejected electron
+enters the amplitude only through
+$F(\bp)=(2\pi)^{-3/2}\int\phi^{-*}_e\,e^{-i\bp\cdot\br}\chi\,d\br$, so the orthogonalized amplitude
+uses
+\begin{equation}
+\tilde F(\bp)=F(\bp)-\frac{S\,G(\bp)}{n},\qquad S=(2\pi)^{3/2}F(\mathbf0),\qquad
+G(\bp)=(2\pi)^{-3/2}\int|\chi|^2e^{-i\bp\cdot\br}d\br,
+\end{equation}
+where $n=\langle\chi|\chi\rangle$. Orthogonalizing to the full orbital at each orientation would
+make the amplitude non-linear in $\Phi$ and destroy the analytic average of Eq.~(\ref{eq:oave}).
+We therefore orthogonalize each channel $\chi_{g\mu}=R_gY_{l_g\mu}$ to itself. This is the atomic
+prescription applied to every partial wave of the one-centre expansion. With the plane-wave
+expansion, the density form factor is
+\begin{equation}
+\frac{G_{g\mu}(\bp)}{n_g}=\sum_{L=0,2,4}\frac{4\pi(-i)^L}{(2\pi)^{3/2}n_g}\,A_{l\mu L}\sqrt{\tfrac{2L+1}{4\pi}}
+\int_0^\infty R_g^2(r)j_L(pr)r^2dr\;P_L(\cos\theta_p),
+\end{equation}
+\begin{equation}
+A_{l\mu L}=\int|Y_{l\mu}|^2Y_{L0}\,d\Omega .
+\end{equation}
+A brute-force three-dimensional integration agrees with this formula to $6\times10^{-8}$.
+
+\paragraph{Overlaps.} Table~\ref{tab:ovl} gives $|\langle\phi_e|\chi_{g\mu}\rangle|$ at
+$\theta_e=0$. The largest overlaps are in the channels where the short-range term overshot.
+
+\begin{table}[H]\centering\small
+\caption{Overlaps $|\langle\phi_e|\chi_{g\mu}\rangle|$ at $E_e=74$~eV, $\theta_e=0$.}\label{tab:ovl}
+\begin{tabular}{ll}\toprule
+Orbital & Overlaps\\\midrule
+\atwo & s: 0.37; p, d: $\le0.02$\\
+\aone & s: 0.10; p: 0.18--0.20; d: $\le0.01$\\
+1e & p: 0.028; d: 0.003--0.03\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.62\linewidth]{figs/elmir_orth.png}
+\caption{3CWZ (dashed), orthogonalized ejected wave (solid), and orthogonalized wave with the
+short-range potential (dash-dot), compared with experiment~\cite{ElMir2020}.}\label{fig:orth}
+\end{figure}
+
+\paragraph{Results (Fig.~\ref{fig:orth}, Table~\ref{tab:recoil}).}
+\begin{itemize}
+\item The binary peak is unchanged.
+\item Without the short-range term, orthogonalization lowers the recoil region further, by a
+  factor 2--4.
+\item With it, the isotropic shelf disappears and \atwo{} recovers its binary shape, but the
+  recoil falls back to about 10 times below the data.
+\end{itemize}
+Most of the back-scattering produced by the short-range term was therefore the overlap artefact.
+The physical back-scattering contained in the 3CWZ ejected wave is too weak.
+
+\begin{table}[H]\centering\small
+\caption{Binary maximum divided by the mean TDCS in $200$--$300^\circ$ (lower means a stronger
+recoil).}\label{tab:recoil}
+\begin{tabular}{lccccc}\toprule
+Orbital & experiment & 3CWZ & + short-range & orthogonalized & orth.\ + short-range\\\midrule
+\aone & 2.6 & 22 & 1 & 91 & 44\\
+1e & 3.0 & 34 & 2 & 117 & 55\\
+\atwo & 1.6 & 7 & 1 & 15 & 20\\\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Electron momentum spectroscopy}
+\paragraph{Conditions.} Rezkallah \emph{et al.}~\cite{Rezkallah2011} tested the Moccia orbitals
+against the EMS measurements of Bawagan \emph{et al.}~\cite{Bawagan1988}:
+\begin{itemize}
+\item incident energy 1200~eV$+I_n$;
+\item symmetric non-coplanar geometry: both outgoing electrons at $\theta=45^\circ$ with 600~eV
+  each;
+\item the relative azimuth $\Phi$ is varied, which varies the recoil momentum
+\end{itemize}
+\begin{equation}
+q=\Big[(2k_e\cos\theta-k_i)^2+4k_e^2\sin^2\theta\sin^2(\Phi/2)\Big]^{1/2}.
+\end{equation}
+In this regime, the TDCS is proportional to the spherically averaged momentum density of the
+orbital. We ran the 3CWZ code in the same conditions, with $\Phi=0$--$30^\circ$ in $1^\circ$ steps.
+The experimental points and the PWBA curves were read from the figures of
+Ref.~\cite{Rezkallah2011}.
+
+\begin{figure}[H]\centering
 \includegraphics[width=\linewidth]{figs/ems.png}
-\caption{\NH{} momentum profiles at 1200 eV: 3CWZ (absolute, and scaled by 1.75), PWBA of
-Ref.~\cite{Rezkallah2011}, and experiment~\cite{Bawagan1988}.}\label{fig:ems}
+\caption{\NH{} momentum profiles at 1200~eV. Lines: 3CWZ, absolute and multiplied by 1.75;
+finer grids for \aone; PWBA of Ref.~\cite{Rezkallah2011}. Symbols: experiment~\cite{Bawagan1988}.}\label{fig:ems}
 \end{figure}
 
-\subsection{\NH: double differential cross section}
-We integrated the TDCS over the scattered-electron direction:
+\paragraph{Results (Fig.~\ref{fig:ems}).}
 \begin{itemize}
-\item 17 points equally spaced in $\ln K$ and 5 azimuths;
+\item \textbf{Peak positions} are reproduced: $q\approx0.58$ (1e), 0.1 (\atwo) and 0.57 (\aone)~a.u.
+\item \textbf{Shapes.} After normalization (factor 1.72--1.80), \atwo{} and \aone{} follow the data
+  up to $q\approx2.4$~a.u.: the ratio experiment/model is 0.9--1.1 for \aone{} at $q>1.3$. For 1e
+  it is 1.3--1.8 at $q>1.3$~a.u. The PWBA of Ref.~\cite{Rezkallah2011} shows the same deficit, so
+  the high-momentum content of the 1e orbital is slightly too small.
+\item \textbf{Low $q$.} For $q<0.2$~a.u., the data of the p-like orbitals 1e and \aone{} are 2--7
+  times above all calculations. This is the known turn-up of EMS profiles, due to distortion and
+  finite angular resolution.
+\item \textbf{Absolute values.} With the default grids the 3CWZ peaks are 0.56--0.58 of the PWBA
+  for all three orbitals: 1.58, 3.38 and 0.74 against 2.79, 5.82 and 1.32 ($\times10^{-3}$~a.u.).
+  With finer grids the \aone{} peak rises from 0.74 to 1.00. Most of the difference is therefore
+  numerical (Section~\ref{sec:conv}).
+\end{itemize}
+
+\subsection{Double differential cross section}
+\paragraph{Method.} The DDCS is obtained by integrating the TDCS over the scattered electron:
+\begin{equation}
+\frac{d^2\sigma}{d\Omega_e\,dE_e}=\int\sigma^{(3)}d\Omega_s
+=\frac{1}{k_ik_s}\int_{K_{\min}}^{K_{\max}}K\,dK\int_0^{2\pi}\sigma^{(3)}\,d\varphi ,
+\end{equation}
+\begin{itemize}
+\item 17 points equally spaced in $\ln K$ between $k_i-k_s$ and $k_i+k_s$;
+\item azimuths $0$--$180^\circ$ in $45^\circ$ steps, by symmetry;
+\item Simpson's rule in both variables;
 \item the three valence orbitals summed, with 1e counted twice.
 \end{itemize}
-This gives the DDCS at $E_i=500$~eV and $\theta_e=120^\circ$ (Fig.~\ref{fig:ddcs}). The model
-exceeds the data of Opal \emph{et al.}~\cite{Opal1972} by factors of 1.79, 1.58 and 1.35 at
-$E_e=5$, 20 and 60~eV. At 150~eV the excess (factor 7) comes from large momentum transfers, where
-the default grids are not converged (Section~\ref{sec:conv}).
+The result is compared with the data of Opal \emph{et al.}~\cite{Opal1972} at $E_i=500$~eV and
+$\theta_e=120^\circ$, read from Ref.~\cite{Rezkallah2011}.
 
-\begin{figure}[h]\centering
+\begin{figure}[H]\centering
 \includegraphics[width=0.62\linewidth]{figs/ddcs.png}
 \caption{DDCS of \NH{} at $E_i=500$~eV, $\theta_e=120^\circ$: 3CWZ (total and per orbital), 1CW
 of Ref.~\cite{Rezkallah2011}, and experiment~\cite{Opal1972}.}\label{fig:ddcs}
 \end{figure}
 
-\subsection{\CH: TDCS}\label{sec:ch4}
-\todo{TDCS of the \CH{} 1t$_2$ and 2a$_1$ orbitals with the same code, compared with
-Lahmam-Bennani \emph{et al.}~\cite{LahmamBennani2009} (protocol objectives O2, O4). The code
-already contains the \CH{} target, so only the kinematics and the orbital switch need setting.}
-
-\subsection{Post-collision interaction}\label{sec:pci}
-\todo{Protocol objective O3: results with and without $C_{se}$ (set $C_{se}=1$ and its Gamow
-factor to 1) for the \NH{} orbitals at $E_e=74$~eV and for \CH. Discuss the shift of the binary
-peak and the change of the recoil-to-binary ratio.}
-
-\subsection{Variable versus constant charge}\label{sec:zconst}
-\todo{Expected result 1: the same runs with $Z(r)\equiv1$ for the outgoing electrons and
-$Z\equiv0$ for the incident one (3C/BBK limit), to isolate the contribution of the variable
-charge.}
-
-%=====================================================================
-\section{Discussion: origin of the recoil deficit and domain of validity}\label{sec:discussion}
-%=====================================================================
-\subsection{The ejected-electron wave}
-The recoil peak comes from the ejected electron being back-scattered by the residual ion. Three
-results show that the ejected wave of Eq.~(\ref{eq:cwz}) does not contain enough of it.
-
-\textbf{(i) Phase shifts.} We solved the radial equation
-$u''+[k^2-l(l+1)/r^2+2Z_{ion}(r)/r]\,u=0$ exactly with the same $Z_{ion}(r)$ at $E_e=74$~eV. The
-short-range phase shifts beyond the $Z=1$ Coulomb wave are large
-(Table~\ref{tab:delta}). Inside the molecule, the partial waves of the 3CWZ wave keep the $Z=1$
-Coulomb phases, and their radial nodes are displaced. The local $\alpha(r)$ in
-Eq.~(\ref{eq:cwz}) therefore does not produce a solution of the equation it approximates.
-
-\textbf{(ii) Back-scattering.} The elastic cross section of the electron on NH$_3^+$ obtained with
-these phase shifts exceeds the Rutherford ($Z=1$) value by factors 29--137 between $120^\circ$
-and $180^\circ$. This is the process the recoil peak requires.
-
-\textbf{(iii) Not a structure effect.} In a plane-wave picture the binary/recoil ratio would be
-$\rho(q_{\rm binary})/\rho(q_{\rm recoil})$, with $q\approx1.5$ and $3.2$~a.u.\ here. This gives
-38, 59 and 155 for \aone, 1e and \atwo, against 1--2.5 measured. No realistic orbital can account
-for the observed recoil.
-
-These findings agree with the failure of the two corrections tested in Section~\ref{sec:results}.
-The short-range potential acts mainly through the spurious non-orthogonality. Orthogonalization
-removes the spurious part but adds no back-scattering.
-
-\begin{table}[h]\centering\small
-\caption{Short-range phase shifts and elastic back-scattering for e$^-$ + NH$_3^+$ at 74 eV.}\label{tab:delta}
-\begin{tabular}{lcccccc}\toprule
-$l$ & 0 & 1 & 2 & 3 & 4 & 5\\
-$\delta_l$ (rad) & 2.60 & 1.34 & 0.48 & 0.26 & 0.17 & 0.09\\\midrule
-angle & $30^\circ$ & $60^\circ$ & $90^\circ$ & $120^\circ$ & $150^\circ$ & $180^\circ$\\
-$\sigma_{el}/\sigma_{\rm Ruth}(Z=1)$ & 2.5 & 4.8 & 4.9 & 29 & 91 & 137\\\bottomrule
+\begin{table}[H]\centering\small
+\caption{DDCS at $E_i=500$~eV, $\theta_e=120^\circ$ (cm$^2$\,eV$^{-1}$\,sr$^{-1}$).}\label{tab:ddcs}
+\begin{tabular}{cccccc}\toprule
+$E_e$ (eV) & 3CWZ & Opal \emph{et al.} & ratio & share from small $\theta_s$ & \\\midrule
+5 & $8.94\times10^{-19}$ & $5.00\times10^{-19}$ & 1.79 & 0.82--0.90 & ($\theta_s<10$--$15^\circ$)\\
+20 & $1.82\times10^{-19}$ & $1.15\times10^{-19}$ & 1.58 & 0.60--0.89 & ($<14$--$18^\circ$)\\
+60 & $1.08\times10^{-20}$ & $7.97\times10^{-21}$ & 1.35 & 0.34--0.64 & ($<22$--$25^\circ$)\\
+150 & $1.92\times10^{-21}$ & $2.71\times10^{-22}$ & 7.1 & 0.26--0.31 & ($<35$--$37^\circ$)\\\bottomrule
 \end{tabular}
 \end{table}
 
+\paragraph{Results (Fig.~\ref{fig:ddcs}, Table~\ref{tab:ddcs}).}
+\begin{itemize}
+\item From 5 to 60~eV the model exceeds the data by factors 1.8--1.35. The simpler 1CW model of
+  Ref.~\cite{Rezkallah2011} is closer to the data.
+\item At 150~eV the excess (factor 7) comes for 70\% from large scattering angles
+  ($\theta_s>35^\circ$), where the TDCS with the default grids levels off instead of decreasing.
+  The finer-grid tests (Table~\ref{tab:emsconv}) show that this plateau is numerical.
+\item Orthogonalizing the ejected wave does not remove it: the ratio goes from 7.1 to 6.4.
+\end{itemize}
+\todo{Repeat the DDCS with $K$-adapted grids, then integrate over $\Omega_e$ and $E_e$ (SDCS and
+total cross section) and compare with Refs.~\cite{Opal1972,Rejoub2001}.}
+
+\subsection{\CH: TDCS}\label{sec:ch4}
+\todo{TDCS of the \CH{} 1t$_2$ and \atwo{} orbitals with the same code, compared with
+Lahmam-Bennani \emph{et al.}~\cite{LahmamBennani2009} ($E_s=500$~eV, $E_e=37$ and 74~eV), and if
+possible with the low-energy data and M3DW calculations of Refs.~\cite{Isik2016,Chaluvadi2014}
+(objectives O2 and O4). The \CH{} target is already in the code (switch \texttt{iorb=0} for
+1t$_2$). The 2a$_1$ data must be added.}
+
+\subsection{Post-collision interaction}\label{sec:pci}
+\todo{Objective O3: rerun the \NH{} orbitals at $E_e=74$~eV and \CH{} 1t$_2$ with $C_{se}=1$ and
+$N_{se}=1$. Report the shift of the binary peak, the change of the binary/recoil ratio, and the
+effect at $E_e=37$~eV, where PCI should be stronger.}
+
+\subsection{Variable versus constant charge}\label{sec:zconst}
+\todo{Expected result 1: rerun with $Z\equiv1$ for the outgoing electrons and $Z\equiv0$ for the
+incident electron (3C/BBK limit) to isolate the effect of the variable charge on the binary and
+recoil peaks.}
+
+%=====================================================================
+\section{Discussion: origin of the recoil deficit}\label{sec:discussion}
+%=====================================================================
+\subsection{Momenta probed by the experiment}
+In a plane-wave impulse picture, the TDCS is proportional to the momentum density
+$\rho(q)$ of the orbital at $q=|\mathbf K-\bk_e|$. Table~\ref{tab:q} gives the values of $q$ at the
+binary peak, at $120^\circ$ and at the recoil peak for the El~Mir kinematics, and the ratios
+$\rho(q_{\rm binary})/\rho(q)$ computed from the Moccia orbitals.
+
+\begin{table}[H]\centering\small
+\caption{Recoil momenta and plane-wave estimates at $E_s=500$~eV, $\theta_s=-6^\circ$, $E_e=74$~eV.}\label{tab:q}
+\begin{tabular}{lccccc}\toprule
+Orbital & $q_{\rm binary}$ & $q(120^\circ)$ & $q_{\rm recoil}$ & $\rho(q_b)/\rho(q_{120})$ & $\rho(q_b)/\rho(q_r)$\\\midrule
+\aone & 1.51 & 2.19 & 3.16 & 5.6 & 38\\
+1e & 1.49 & 2.21 & 3.18 & 7.3 & 59\\
+\atwo & 1.45 & 2.26 & 3.22 & 49 & 155\\
+\midrule
+Experiment & & & & & 1.1--2.5\\\bottomrule
+\end{tabular}
+\end{table}
+
+Two conclusions follow.
+\begin{itemize}
+\item The whole measured TDCS lies in the high-momentum tail of the orbitals. The EMS test showed
+  that this tail is somewhat too small for 1e, which may contribute to the narrow binary peak.
+\item No realistic orbital has as much density at $q\approx3.2$ as at $q\approx1.5$~a.u. The
+  measured recoil peak cannot be a structure effect. It must come from the scattering of the
+  ejected electron by the residual ion.
+\end{itemize}
+
+\subsection{Exact solution of the one-electron equation}
+The 3CWZ ejected wave aims to describe the motion in the screened ionic field,
+Eq.~(\ref{eq:schr}) with $Z\to Z_{ion}(r)$. We solved this equation exactly by partial waves:
+\begin{equation}
+u_l''(r)+\Big[k^2-\frac{l(l+1)}{r^2}+\frac{2Z_{ion}(r)}{r}\Big]u_l(r)=0 ,
+\end{equation}
+with the $Z_{ion}(r)$ of the code (\aone{} hole) and $k=2.33$~a.u.\ ($E_e=74$~eV). The solution was
+integrated to $r=40$~a.u.\ and matched to the regular and irregular Coulomb functions $F_l$,
+$G_l$ for $Z=1$:
+\begin{equation}
+u_l\propto\cos\delta_l\,F_l(\eta,kr)+\sin\delta_l\,G_l(\eta,kr),
+\end{equation}
+which defines the short-range phase shifts $\delta_l$ beyond the $Z=1$ Coulomb wave.
+
+\begin{table}[H]\centering\small
+\caption{Short-range phase shifts of e$^-$ + NH$_3^+$ at 74~eV.}\label{tab:delta}
+\begin{tabular}{lccccccccc}\toprule
+$l$ & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8\\
+$\delta_l$ (rad) & 2.60 & 1.34 & 0.48 & 0.26 & 0.17 & 0.09 & 0.04 & 0.017 & 0.007\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{itemize}
+\item $\delta_0=2.60$ is equivalent to $-0.54$ modulo $\pi$. The value above $\pi/2$ reflects the
+  bound s states of the potential (Levinson's theorem).
+\item $\delta_1=1.34$ is close to $\pi/2$, the maximum effect: the p wave is the dominant missing
+  channel.
+\item The shifts fall below 0.2~rad for $l\ge4$.
+\end{itemize}
+
+\paragraph{Comparison of the partial waves.} We projected the 3CWZ wave of
+Eqs.~(\ref{eq:cw})--(\ref{eq:etar}) on Legendre polynomials at fixed $r$. A true continuum
+solution has a constant phase $\sigma_l+\delta_l$ (mod $\pi$) in each partial wave. The 3CWZ
+wave does not. Its phase drifts with $r$ towards the $Z=1$ value, not towards the exact one
+(Table~\ref{tab:pw}).
+\begin{itemize}
+\item Its radial nodes are displaced. The exact s wave has a node near $r=0.3$~a.u., where it must
+  be orthogonal to the 1s-like core: amplitude 0.08 (exact) against 0.56 (3CWZ).
+\item At $r=0.6$~a.u.\ the situation is reversed: 0.53 against 0.09.
+\end{itemize}
+
+\begin{table}[H]\centering\small
+\caption{Phase (mod $\pi$, rad) of the partial waves at $E_e=74$~eV.}\label{tab:pw}
+\begin{tabular}{lccc}\toprule
+$l$ & exact (all $r$) & 3CWZ ($r=0.3\to2.5$~a.u.) & Coulomb $Z=1$\\\midrule
+0 & $-0.33$ & $0.07\to0.25$ & 0.22\\
+1 & $1.15$ & $-0.96\to-0.22$ & $-0.19$\\
+2 & $0.08$ & $-1.66\to-0.48$ & $-0.40$\\
+3 & $-0.28$ & $-2.17\to-0.65$ & $-0.54$\\\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Back-scattering.} The elastic scattering amplitude of the electron on NH$_3^+$ follows
+from the phase shifts:
+\begin{equation}
+f(\theta)=f_C(\theta)+\frac1{2ik}\sum_l(2l+1)e^{2i\sigma_l}\big(e^{2i\delta_l}-1\big)P_l(\cos\theta),
+\end{equation}
+where $f_C$ is the Rutherford amplitude for $Z=1$. Table~\ref{tab:back} compares $|f|^2$ with
+$|f_C|^2$.
+
+\begin{table}[H]\centering\small
+\caption{Elastic e$^-$ + NH$_3^+$ cross section divided by the Rutherford value for $Z=1$, at 74~eV.}\label{tab:back}
+\begin{tabular}{lcccccc}\toprule
+angle & $30^\circ$ & $60^\circ$ & $90^\circ$ & $120^\circ$ & $150^\circ$ & $180^\circ$\\
+$|f|^2/|f_C|^2$ & 2.5 & 4.8 & 4.9 & 29 & 91 & 137\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{itemize}
+\item At forward angles the ion potential is only moderately stronger than $Z=1$.
+\item At backward angles, the strong field near the nitrogen ($Z$ up to 7) reflects the electron
+  about 100 times more efficiently.
+\end{itemize}
+This is exactly the process the recoil peak requires. The 3CWZ ejected wave keeps the $Z=1$ phases
+outside $r\approx2$~a.u.\ and has the wrong phases inside. It cannot produce this back-scattering.
+
+\subsection{Interpretation of the tests}
+The diagnosis explains all the results of Section~\ref{sec:results}:
+\begin{itemize}
+\item The binary peak is correct in every version. It is determined by the initial state and the
+  first-order projectile interaction, which are adequate.
+\item The recoil and large-angle deficit is the same for all three orbitals. It is a missing
+  mechanism, not an orbital-specific problem.
+\item The short-range potential raises the large-angle TDCS isotropically, through the
+  non-orthogonal overlap, not through physical back-scattering.
+\item Orthogonalization removes that artefact and leaves almost no back-scattering, because the
+  phases of the ejected wave are still wrong.
+\end{itemize}
+
+\subsection{Proposed improvement: distorted wave for the ejected electron}
+We propose to replace the 3CWZ ejected wave by the exact solution of Eq.~(\ref{eq:schr}) with the
+potential of Section~\ref{sec:zeff}:
+\begin{equation}
+\phi^{-}_e(\br)=\sqrt{\frac{2}{\pi}}\frac{1}{kr}\sum_l(2l+1)\,i^l\,e^{-i(\sigma_l+\delta_l)}\,u_l(r)\,P_l(\hat\bk\cdot\hat\br),
+\end{equation}
+where $u_l$ is normalized to $\sin(kr-l\pi/2+\eta\ln2kr+\sigma_l+\delta_l)$.
+
+\textbf{Implementation.} Only the numerical correction of the ejected wave changes. The structure
+of Eq.~(\ref{eq:split}) is kept:
+\begin{equation}
+\phi_e\Phi\;\to\;\big[\phi^{DW}_e-\phi^{C}_e(Z=1)\big]\Phi+\phi^{C}_e(Z=1)\Phi .
+\end{equation}
+\begin{itemize}
+\item The second term is the existing analytic part.
+\item The first term is a finite sum over $l\le l_{\max}\approx10$. Because the phase shifts
+  persist at large $r$, it must be integrated over the extent of the orbital ($r\lesssim12$~a.u.)
+  instead of $r<d$.
+\item The projectile waves, the PCI factor and the Gamow factors are unchanged.
+\end{itemize}
+
+\textbf{Consistency.} The approach:
+\begin{itemize}
+\item uses exactly the potential of the variable-charge derivation;
+\item drops only the local approximation $\eta\to\eta(r)$ for the ejected electron;
+\item is the ejected-electron part of the distorted-wave methods~\cite{Madison2010,Gao2005};
+\item follows the 1DW calculations for H$_2$O with Moccia orbitals~\cite{Champion2006}.
+\end{itemize}
+Since the exact wave and the bound orbitals see the same potential, they are nearly orthogonal.
+The short-range projectile potential then becomes consistent with the ejected wave.
+
+\textbf{Planned checks:}
+\begin{itemize}
+\item with all $\delta_l=0$, the present $Z=1$ results are recovered;
+\item the partial-wave sum of the $Z=1$ Coulomb wave reproduces the code's wave on the grid;
+\item convergence in $l_{\max}$ and in the radial grid.
+\end{itemize}
+
 \subsection{Domain of validity}
-Within the present implementation, the molecular 3CWZ model is reliable for:
-\begin{itemize}
-\item the position and shape of the binary peak in asymmetric kinematics with small momentum
-  transfer;
-\item the momentum profiles of EMS, at the level of the PWBA.
-\end{itemize}
-It is not reliable for:
-\begin{itemize}
-\item the recoil region and large ejection angles, because of the missing short-range distortion
-  of the ejected electron;
-\item fast outgoing electrons or large momentum transfer, without grids adapted to $K$.
-\end{itemize}
+Table~\ref{tab:valid} summarizes the domain of validity established in this work.
+
+\begin{table}[H]\centering\small
+\caption{Domain of validity of the molecular 3CWZ model (present implementation).}\label{tab:valid}
+\begin{tabular}{p{6.2cm}p{8.2cm}}\toprule
+Reliable & Not reliable\\\midrule
+Position and shape of the binary peak in asymmetric kinematics with small momentum transfer
+& Recoil region and large ejection angles (missing short-range distortion of the ejected electron)\\
+Momentum profiles of EMS at the PWBA level (with converged grids)
+& Fast outgoing electrons or large momentum transfer ($K\gtrsim3$~a.u.) with the default grids\\
+Effective charges and target description (Moccia orbitals)
+& Integrated cross sections (DDCS, SDCS, total) before grid adaptation\\\bottomrule
+\end{tabular}
+\end{table}
 \todo{Revise this section after the \CH, PCI and constant-charge results.}
 
 %=====================================================================
 \section{Conclusions and perspectives}\label{sec:conclusion}
 %=====================================================================
-\textbf{Conclusions.}
+\subsection{Conclusions}
 \begin{itemize}
-\item We extended the 3CWZ model to molecular targets described by Moccia one-centre orbitals.
-  The orientation average is analytic, and the effective charges are derived from the Hartree
-  potential with a self-interaction correction.
-\item We implemented the model in a validated parallel code and applied it to the three valence
-  orbitals of \NH.
-\item The binary peak is well described.
-\item The recoil peak is underestimated by a factor 5--10. We traced this to the ejected-electron
-  wave, not to the target description or to the numerics.
+\item \textbf{Formalism (O1).} The 3CWZ model was extended to molecular targets described by the
+  one-centre SCF orbitals of Moccia:
+  \begin{itemize}
+  \item the orientation average is analytic;
+  \item the effective charges follow from the monopole Hartree potential, with a
+    self-interaction correction for the ejected electron;
+  \item the computed $Z(r)$ reproduces every feature expected from the derivation.
+  \end{itemize}
+\item \textbf{Code.} A validated parallel code treats any orbital of an XH$_n$ molecule. It
+  reproduces the original \CH{} code exactly, and its analytic integrals agree with numerical
+  integration to $10^{-7}$.
+\item \textbf{\NH{} TDCS (O2, O4).} For \atwo, 1e and \aone{} at $E_s=500$~eV, $E_e=74$~eV:
+  \begin{itemize}
+  \item the binary peak is well reproduced;
+  \item the recoil peak and the large-angle side are 5--10 times too small.
+  \end{itemize}
+\item \textbf{Origin of the deficit.} The deficit comes from the ejected-electron wave. The
+  local-charge Coulomb wave is not a solution of the one-electron equation in the screened ionic
+  potential. It misses phase shifts of up to 2.6~rad and back-scattering about 100 times the
+  Coulomb value. Neither the short-range projectile potential nor orthogonalization corrects it.
+\item \textbf{Additional tests.} The EMS profiles confirm the Moccia orbitals; the 1e
+  high-momentum tail is slightly too small. The EMS and DDCS tests also delimit the numerical
+  domain of the present grids.
+\end{itemize}
+\todo{Add the conclusions on \CH{} (O2, O4), on the PCI study (O3) and on the comparison with
+constant charge.}
+
+\subsection{Perspectives}
+\begin{itemize}
+\item Exact distorted wave for the ejected electron in the same Hartree potential, within the 3CWZ
+  structure.
+\item Grids adapted to the momentum transfer, then DDCS, SDCS and total cross sections
+  (comparison with Refs.~\cite{Opal1972,Rejoub2001}).
+\item Exchange amplitude, and comparison with the low-energy data of Nixon
+  \emph{et al.}~\cite{Nixon2013}.
+\item Non-spherical ($L\ge1$) terms of the potential, which matter for the dipolar \NH.
+\item Extension to other molecules of interest (H$_2$O, biomolecular fragments) and to other
+  geometries (perpendicular plane, low energy).
 \end{itemize}
 
-\textbf{Perspectives.}
+%=====================================================================
+\appendix
+\section{Status of the protocol objectives}
+\begin{table}[H]\centering\small
+\begin{tabular}{p{4.2cm}p{7.6cm}p{2.2cm}}\toprule
+Objective / step & Realisation & Status\\\midrule
+O1. Molecular 3CWZ with Moccia orbitals, $Z(r)$ per MO & Sections~\ref{sec:molecule}--\ref{sec:numerics}; code validated & Done\\
+O2. TDCS for \CH{} and \NH{} orbitals & \NH: three orbitals, El~Mir, EMS, DDCS; \CH: to do & Partial\\
+O3. PCI with and without $C_{12}$ & Section~\ref{sec:pci} & To do\\
+O4. Comparison with experiment & \NH{} vs~\cite{ElMir2020,Bawagan1988,Opal1972}; \CH{} and~\cite{Nixon2013,Rejoub2001} to do & Partial\\
+Contribution of the variable charge & $Z(r)$ derived and checked; constant-$Z$ comparison to do & Partial\\
+Domain of validity & Section~\ref{sec:discussion} & Partial\\\midrule
+Bibliography (2 months) & & Partial\\
+OCE orbitals and $Z(r)$ (1 month) & & Done\\
+Molecular 3CWZ code (1 month) & & Done\\
+\CH{} calculations, PCI study (3 months) & & To do\\
+\NH{} calculations (3 months) & & Partial\\
+Analysis (2 months) & & Partial\\\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Data and code}
+All files are in the repository \texttt{dramoros95/dd}, folder \texttt{nh3/}:
 \begin{itemize}
-\item Replace the ejected 3CWZ wave by the exact distorted wave in the same Hartree potential
-  (partial waves up to $l\approx10$, matched to the $Z=1$ Coulomb wave). This keeps the rest of
-  the 3CWZ structure, in the spirit of the 1DW calculations for H$_2$O~\cite{Champion2006} and the
-  distorted-wave methods~\cite{Madison2010}.
-\item Use grids adapted to the momentum transfer, then compute DDCS, SDCS and total cross sections
-  (comparison with Ref.~\cite{Rejoub2001}).
-\item Include the exchange amplitude and compare with the low-energy data of Nixon
-  \emph{et al.}~\cite{Nixon2013}.
-\item Extend the model to other molecules of interest (H$_2$O, biomolecular fragments).
+\item \texttt{nh3\_opt\_claude.for}: the molecular 3CWZ code (options \texttt{isr}, \texttt{iorth});
+\item \texttt{elmir\_conditions/}: runs, digitized data and figures for Ref.~\cite{ElMir2020};
+\item \texttt{rezkallah\_conditions/}: EMS and DDCS tests, data and scripts;
+\item \texttt{diagnostics/}: $Z(r)$ and phase-shift programs;
+\item \texttt{theory\_orthogonalization.md}, \texttt{theory\_distorted\_wave.md}: theory notes;
+\item \texttt{final\_report/}: this report.
 \end{itemize}
-\todo{Add the conclusions on \CH{} and on the PCI study.}
 
 %=====================================================================
 \begin{thebibliography}{99}\small
+\bibitem{McCarthy1991} I. E. McCarthy, E. Weigold, Rep. Prog. Phys. \textbf{54}, 789 (1991).
+\bibitem{Bartschat2016} K. Bartschat, M. J. Kushner, Proc. Natl. Acad. Sci. USA \textbf{113}, 7026 (2016).
+\bibitem{Sanche2005} L. Sanche, Eur. Phys. J. D \textbf{35}, 367 (2005).
+\bibitem{Avillez2019} M. A. de Avillez, M. Guerra, J. P. Santos, D. Breitschwerdt, Astron. Astrophys. \textbf{631}, A42 (2019).
+\bibitem{Alizadeh2015} E. Alizadeh, T. M. Orlando, L. Sanche, Annu. Rev. Phys. Chem. \textbf{66}, 379 (2015).
+\bibitem{Ehrhardt1969} H. Ehrhardt, M. Schulz, T. Tekaat, K. Willmann, Phys. Rev. Lett. \textbf{22}, 89 (1969).
+\bibitem{LahmamBennani1991} A. Lahmam-Bennani, J. Phys. B \textbf{24}, 2401 (1991).
+\bibitem{Byron1989} F. W. Byron Jr., C. J. Joachain, Phys. Rep. \textbf{179}, 211 (1989).
+\bibitem{Bote2008} D. Bote, F. Salvat, Phys. Rev. A \textbf{77}, 042701 (2008).
+\bibitem{DalCappello1984} C. Dal Cappello, C. Tavard, A. Lahmam-Bennani, M. C. Dal Cappello, J. Phys. B \textbf{17}, 4557 (1984).
+\bibitem{Brothers1984} M. J. Brothers, R. A. Bonham, J. Phys. B \textbf{17}, 4235 (1984).
+\bibitem{Gao2005} J. Gao, D. H. Madison, J. L. Peacher, Phys. Rev. A \textbf{72}, 020701 (2005).
+\bibitem{Madison2010} D. H. Madison, O. Al-Hagan, J. At. Mol. Opt. Phys. \textbf{2010}, 367180 (2010).
+\bibitem{Xu2012} S. Xu, H. Chaluvadi, X. Ren, T. Pfl\"uger, A. Senftleben, C. G. Ning, S. Yan, P. Zhang, J. Yang, X. Ma, J. Ullrich, D. H. Madison, A. Dorn, J. Chem. Phys. \textbf{137}, 144301 (2012).
 \bibitem{Brauner1989} M. Brauner, J. S. Briggs, H. Klar, J. Phys. B \textbf{22}, 2265 (1989).
+\bibitem{Garibotti1980} C. R. Garibotti, J. E. Miraglia, Phys. Rev. A \textbf{21}, 572 (1980).
 \bibitem{Bechane2024} K. Bechane, S. Houamer, T. Khatir, A. Tamin, C. Dal Cappello, Phys. Rev. A \textbf{109}, 012812 (2024).
 \bibitem{Tamin2024} A. Tamin, S. Houamer, T. Khatir, L. U. Ancarani, C. Dal Cappello, J. Chem. Phys. \textbf{161}, 164305 (2024).
 \bibitem{Zaidi2024} O. Zaidi, A. Mansouri, S. Houamer, A. Tamin, T. Khatir, C. Dal Cappello, Eur. Phys. J. D \textbf{78}, 140 (2024).
-\bibitem{Moccia1964a} R. Moccia, J. Chem. Phys. \textbf{40}, 2164 (1964) [HF, CH$_4$, SiH$_4$].
-\bibitem{Moccia1964b} R. Moccia, J. Chem. Phys. \textbf{40}, 2176 (1964) [NH$_3$, NH$_4^+$, PH$_3$, PH$_4^+$].
+\bibitem{Landau1981} L. D. Landau, E. M. Lifshitz, \emph{Quantum Mechanics: Non-relativistic Theory} (Pergamon, Oxford, 1981).
+\bibitem{Abramowitz1972} M. Abramowitz, I. A. Stegun, \emph{Handbook of Mathematical Functions} (Dover, New York, 1972).
+\bibitem{Pimblott2007} S. M. Pimblott, J. A. LaVerne, Radiat. Phys. Chem. \textbf{76}, 1244 (2007).
+\bibitem{Janev2002} R. K. Janev, D. Reiter, Phys. Plasmas \textbf{9}, 4071 (2002).
+\bibitem{Herbst2009} E. Herbst, E. F. van Dishoeck, Annu. Rev. Astron. Astrophys. \textbf{47}, 427 (2009).
+\bibitem{Moccia1964a} R. Moccia, J. Chem. Phys. \textbf{40}, 2164 (1964).
+\bibitem{Moccia1964b} R. Moccia, J. Chem. Phys. \textbf{40}, 2176 (1964).
+\bibitem{Helgaker2000} T. Helgaker, P. J{\o}rgensen, J. Olsen, \emph{Molecular Electronic-Structure Theory} (Wiley, 2000).
+\bibitem{Davydov1976} A. S. Davydov, \emph{Quantum Mechanics} (Pergamon, New York, 1976).
+\bibitem{Champion2006} C. Champion, C. Dal Cappello, S. Houamer, A. Mansouri, Phys. Rev. A \textbf{73}, 012717 (2006).
+\bibitem{Szabo1996} A. Szabo, N. S. Ostlund, \emph{Modern Quantum Chemistry} (Dover, New York, 1996).
+\bibitem{Hartree1928} D. R. Hartree, Proc. Cambridge Philos. Soc. \textbf{24}, 89 (1928).
+\bibitem{Jackson1998} J. D. Jackson, \emph{Classical Electrodynamics}, 3rd ed. (Wiley, New York, 1998).
 \bibitem{ElMir2020} R. El Mir, K. Kaja, A. Naja, E. M. Staicu Casagrande, S. Houamer, C. Dal Cappello, J. Phys. B \textbf{54}, 015201 (2021).
+\bibitem{Rezkallah2011} Z. Rezkallah, S. Houamer, C. Dal Cappello, I. Charpentier, A. C. Roy, Nucl. Instrum. Methods B \textbf{269}, 2750 (2011).
 \bibitem{Bawagan1988} A. O. Bawagan, R. M\"uller-Fiedler, C. E. Brion, E. R. Davidson, C. Boyle, Chem. Phys. \textbf{120}, 335 (1988).
 \bibitem{Opal1972} C. B. Opal, E. C. Beaty, W. K. Peterson, At. Data \textbf{4}, 209 (1972).
-\bibitem{Rezkallah2011} Z. Rezkallah, S. Houamer, C. Dal Cappello, I. Charpentier, A. C. Roy, Nucl. Instrum. Methods B \textbf{269}, 2750 (2011).
 \bibitem{LahmamBennani2009} A. Lahmam-Bennani, A. Naja, E. M. Staicu Casagrande, N. Okumus, C. Dal Cappello, I. Charpentier, S. Houamer, J. Phys. B \textbf{42}, 165201 (2009).
-\bibitem{Nixon2013} K. L. Nixon, A. J. Murray, H. Chaluvadi, C. Ning, J. Colgan, D. H. Madison, J. Chem. Phys. \textbf{138}, 174304 (2013).
+\bibitem{Isik2016} N. I\c{s}ik, M. Do\u{g}an, S. Bah\c{c}eli, J. Phys. B \textbf{49}, 065203 (2016).
+\bibitem{Chaluvadi2014} H. Chaluvadi, C. G. Ning, D. H. Madison, Phys. Rev. A \textbf{89}, 062712 (2014).
 \bibitem{Rejoub2001} R. Rejoub, B. G. Lindsay, R. F. Stebbings, J. Chem. Phys. \textbf{115}, 5053 (2001).
-\bibitem{Champion2006} C. Champion, C. Dal Cappello, S. Houamer, A. Mansouri, Phys. Rev. A \textbf{73}, 012717 (2006).
-\bibitem{Madison2010} D. H. Madison, O. Al-Hagan, J. At. Mol. Opt. Phys. \textbf{2010}, 367180 (2010).
+\bibitem{Nixon2013} K. L. Nixon, A. J. Murray, H. Chaluvadi, C. Ning, J. Colgan, D. H. Madison, J. Chem. Phys. \textbf{138}, 174304 (2013).
 \end{thebibliography}
 
 \end{document}
