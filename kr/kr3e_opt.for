@@ -129,7 +129,7 @@ C .  exp(2i eta12 ln p) when p -> 0 (ilog=0 : uniform, as the original)
       ilog=1
       plo=1.d-4
       dp0=0.d0 ; dp1=0.7d0 ; dp2=1.6d0 ; dp3=2.1d0 ; dpf=10.d0
-      np1=20 ; np2=120 ; np3=40 ; np4=5
+      np1=160 ; np2=120 ; np3=40 ; np4=5
       nt=80
       nh=80
 

@@ -55,6 +55,21 @@ All variables that can be set in `kr3e.inp` are listed, with their meaning, in
 `kr3e.inp.example`: kinematics (Eₛ, E₁, E₂, θₛ, θ₂, step in θ₁), model switches, grids and the
 output file name.
 
+## Accuracy of the grids (tested at E₁ = E₂ = 7 eV, θ₂ = 104°)
+| Grid | Default | Change when refined |
+|---|---|---|
+| \|p\| on [0, 0.7], log-spaced (`np1`) | 160 | 160 → 320: 0.1–6 % at all angles that matter |
+| \|p\| above 0.7 (`np2`, `np3`, `np4`) | 120, 40, 5 | < 2 % |
+| angles of p (`nt`, `nh`) | 80 × 80 | < 2 % at the lobes (with `np1` converged) |
+| partial waves of Z(r) (`lmax`) | 16 | 6e-8 |
+| radial grid of Z(r) (`ndr`, `nlr`, `dz`) | 8 × 12, 8 a.u. | ≤ 5 % |
+
+- **Most sensitive grid:** the small-|p| interval. The Fourier transform of C12 oscillates as
+  exp(2iη₁₂ ln p) as p → 0. With the original uniform 20 points, the TDCS was wrong by
+  25–35 % at some angles.
+- **Near θ₁ ≈ θ₂** the TDCS is physically ≈ 0 (e–e repulsion). Refining the grid pushes it
+  towards 0 (10⁻⁶ → 10⁻¹³). Values there below about 1e-3 of the maximum are noise.
+
 ## What was changed, and why
 1. **Z(r) term integrated with one point.** The original `tdN` used `nlg=nlg1=1`: one point
    in r, θ and φ. The term is now computed by partial waves (`PWDL`, `JTAB`, `CCOEF`, `PWQ3`):
@@ -93,4 +108,4 @@ the same conventions: they agree to 6 digits for Z = 2.
 | Run | Time |
 |---|---|
 | Original (Z(r) term with 1 point) | ≈ 45 s per angle on 1 core (≈ 55 min for 73 angles) |
-| Optimized (converged Z(r) term) | ≈ 5 s per angle on 4 cores (≈ 6 min for 73 angles) |
+| Optimized (converged Z(r) term, np1 = 160) | ≈ 8 s per angle on 4 cores (≈ 10 min for 73 angles) |

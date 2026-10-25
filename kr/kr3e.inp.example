@@ -13,7 +13,7 @@
   iwf    = 1,           ! 1 = Clementi tables, 2 = data of the original code
   izv    = 1,           ! 1 = variable charge Z(r), 0 = constant Z = 2
 ! ---- numerical grids (see README before changing) ----
-  np1    = 20,          ! points of |p| on [0,dp1] (log-spaced if ilog=1)
+  np1    = 160,         ! points of |p| on [0,dp1], log-spaced (160: converged to a few %)
   nt     = 80, nh = 80, ! angular points of p
 ! ---- output file ----
   fout   = 'Kr_E1-15_E2-15_th2-104.dat'
