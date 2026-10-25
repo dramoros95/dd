@@ -265,9 +265,9 @@ C .   3P components : t(m1,m2) = q1t q2s + q1s q2t - 2 q1s q2s
       s3=s3/dsqrt(2.d0) ; s5=s5/dsqrt(2.d0) ; s8=s8/dsqrt(2.d0)
       atfi=3.d0*(cdabs(s3)**2+cdabs(s5)**2+cdabs(s8)**2)
       atfi=atfi*an1*16.d0*api*anc1*anc2*anc3
-      write(4,'(F10.3,2X,E18.10)') at1,atfi
+      write(4,'(F10.3,2X,ES18.10E3)') at1,atfi
       call flush(4)
-      write(*,'(A,F8.2,A,E16.8)') ' theta1 = ',at1,'  TDCS = ',atfi
+      write(*,'(A,F8.2,A,ES16.8E3)') ' theta1 = ',at1,'  TDCS = ',atfi
  800  continue
       close(unit=4)
       end
