@@ -615,3 +615,17 @@ C .  append n Gauss-Legendre points of [a,b] to (dxp,dwp)
       np=np+n
       return
       end
+
+C .  append n Gauss-Legendre points in ln(p) on [a,b] (a > 0)
+      SUBROUTINE PINTL(a,b,n,xx,ww,np,dxp,dwp)
+      implicit none
+      integer n,np,i
+      double precision a,b,xx(*),ww(*),dxp(*),dwp(*)
+      call GAULEG(dlog(a),dlog(b),xx,ww,n,2d-16)
+      do i=1,n
+         dxp(np+i)=dexp(xx(i))
+         dwp(np+i)=ww(i)*dexp(xx(i))
+      enddo
+      np=np+n
+      return
+      end

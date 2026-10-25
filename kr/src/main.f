@@ -65,7 +65,7 @@ C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
       dimension dxp(400),dwp(400),dxtp(200),dwtp(200),dxhp(200)
      $ ,dwhp(200)
       double precision rgr(nrx),wgr(nrx),r4g(nrx),xx(400),ww(400)
-      double precision ZKR,R4P,GAMOWF,qmax
+      double precision ZKR,R4P,GAMOWF,qmax,plo
       complex*16, allocatable :: e2t(:,:),e2s(:,:)
       double precision, allocatable :: ppx(:),ppy(:),ppz(:),pwt(:)
       complex*16, allocatable :: dl1(:,:),dl2(:,:),jt1(:,:,:)
@@ -84,6 +84,8 @@ C .  SWITCHES
 C .   iwf = 1 : Clementi tables 4.1-4.3 ; 2 : data of the original code
 C .   izv = 1 : Z(r) correction (PWCOR) ; 0 : constant charge Z = 2
 C .   lmax, dz, ndr x nlr : partial waves and radial grid of PWCOR
+C .   (interval edges dz*(i/ndr)**2 : dense near the nucleus, where
+C .   Z(r) falls from 36)
 C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
       iwf=1
       izv=1
@@ -108,7 +110,12 @@ C .  asymptotic charge seen by the ejected electrons ; C12 constants
       abeta=0.005d0
       az12=0.5d0
 
-C .  p GRID (as the original : |p| in 4 intervals , 80 x 80 angles)
+C .  p GRID : |p| in 4 intervals , nt x nh angles. ilog=1 : the first
+C .  interval [0,dp1] is Gauss-Legendre in ln(p) on [plo,dp1] (+ 4 points
+C .  on [0,plo]) : the Fourier transform of C12 oscillates as
+C .  exp(2i eta12 ln p) when p -> 0 (ilog=0 : uniform, as the original)
+      ilog=1
+      plo=1.d-4
       dp0=0.d0 ; dp1=0.7d0 ; dp2=1.6d0 ; dp3=2.1d0 ; dpf=10.d0
       np1=20 ; np2=120 ; np3=40 ; np4=5
       nt=80
@@ -139,7 +146,12 @@ C .  WAVE FUNCTIONS , Z(r)
 
 C .  p grid as flat arrays (index ip)
       np=0
-      call PINT(dp0,dp1,np1,xx,ww,np,dxp,dwp)
+      if (ilog.eq.1) then
+         call PINT(dp0,plo,4,xx,ww,np,dxp,dwp)
+         call PINTL(plo,dp1,np1,xx,ww,np,dxp,dwp)
+      else
+         call PINT(dp0,dp1,np1,xx,ww,np,dxp,dwp)
+      endif
       call PINT(dp1,dp2,np2,xx,ww,np,dxp,dwp)
       call PINT(dp2,dp3,np3,xx,ww,np,dxp,dwp)
       call PINT(dp3,dpf,np4,xx,ww,np,dxp,dwp)
@@ -170,7 +182,8 @@ C .  Z(r) CORRECTION : radial grid , 4p on it , d_l(r) , J_lL(q)
       if (izv.eq.1) then
          nr=0
          do id=1,ndr
-            call GAULEG((id-1)*dz/ndr,id*dz/ndr,xx,ww,nlr,1d-15)
+            call GAULEG(dz*(dble(id-1)/ndr)**2,dz*(dble(id)/ndr)**2
+     $       ,xx,ww,nlr,1d-15)
             do i=1,nlr
                nr=nr+1
                rgr(nr)=xx(i)
