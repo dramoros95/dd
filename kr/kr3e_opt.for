@@ -53,8 +53,11 @@ C .            kr3e_opt.for -o kr3e_opt
 C .   ifx -O3 -xHOST -qopenmp -extend-source 132 kr3e_opt.for
 C .            -o kr3e_opt
 C .  RUN:  export OMP_NUM_THREADS=8 ; echo "1 73" | ./kr3e_opt
+C .  Parameters: defaults below, or file kr3e.inp in the run directory
+C .  (namelist, e.g.  &input ee1=15, ee2=15, degt2=104 /).
 C .  Input "ni n" = first and last index of theta_1 (theta_1 =
-C .  dth1*(index-1)). Output: kr3e_3P.dat (theta_1 , TDCS).
+C .  dth1*(index-1)) ; default 0..360 deg. Output: file fout
+C .  (default kr3e_3P.dat) , columns theta_1 (deg) , TDCS.
 C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
       program kr3e
       implicit double precision (a-h)
@@ -66,6 +69,12 @@ C . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
      $ ,dwhp(200)
       double precision rgr(nrx),wgr(nrx),r4g(nrx),xx(400),ww(400)
       double precision ZKR,R4P,GAMOWF,qmax,plo
+      double precision degts,degps,degt2,degp2
+      character*80 fout
+      logical lex
+      namelist /input/ ee1,ee2,ees,enioni,degts,degps,degt2,degp2,dth1
+     $ ,iwf,izv,lmax,dz,ndr,nlr,ilog,plo,dp1,dp2,dp3,dpf,np1,np2,np3
+     $ ,np4,nt,nh,fout
       complex*16, allocatable :: e2t(:,:),e2s(:,:)
       double precision, allocatable :: ppx(:),ppy(:),ppz(:),pwt(:)
       complex*16, allocatable :: dl1(:,:),dl2(:,:),jt1(:,:,:)
@@ -99,12 +108,15 @@ C .  KINEMATICS (as DI-Kr-4p-BBK-zv-3P.for)
       ee1=7.d0
       ee2=7.d0
       ees=5500.d0
-      eei=ees+ee1+ee2+enioni
-      ets=1.d0*arad
-      his=180.d0*arad
-      et2=104.d0*arad
-      hi2=0.d0
+C .  angles in degrees : scattered (theta_s , phi_s) , electron 2
+C .  (theta_2 , phi_2) ; electron 1 is scanned in the plane phi_1 = 0
+C .  with the step dth1
+      degts=1.d0
+      degps=180.d0
+      degt2=104.d0
+      degp2=0.d0
       dth1=5.d0
+      fout='kr3e_3P.dat'
 C .  asymptotic charge seen by the ejected electrons ; C12 constants
       az=2.d0
       abeta=0.005d0
@@ -120,6 +132,27 @@ C .  exp(2i eta12 ln p) when p -> 0 (ilog=0 : uniform, as the original)
       np1=20 ; np2=120 ; np3=40 ; np4=5
       nt=80
       nh=80
+
+C .  OPTIONAL INPUT FILE kr3e.inp (namelist &input ... /) : any of the
+C .  variables above can be changed there without recompiling
+      inquire(file='kr3e.inp',exist=lex)
+      if (lex) then
+         open(unit=7,file='kr3e.inp',status='old')
+         read(7,nml=input)
+         close(7)
+         write(*,*) 'Parameters read from kr3e.inp'
+      endif
+      if (np1+np2+np3+np4+4.gt.400) stop 'np1+np2+np3+np4 > 396'
+      if (nt.gt.200.or.nh.gt.200) stop 'nt or nh > 200'
+      if (lmax.gt.lmx-1) stop 'lmax > 29'
+      eei=ees+ee1+ee2+enioni
+      ets=degts*arad
+      his=degps*arad
+      et2=degt2*arad
+      hi2=degp2*arad
+      write(*,'(A,4F10.3,A)') ' Ei, Es, E1, E2 = ',eei,ees,ee1,ee2,' eV'
+      write(*,'(A,4F9.2,A)') ' theta_s, phi_s, theta_2, phi_2 = '
+     $ ,degts,degps,degt2,degp2,' deg'
 
       aki=dsqrt(eei*acon)
       aks=dsqrt(ees*acon)
@@ -230,9 +263,9 @@ C .  ANGLES
       Read(*,*,end=999) ni,n
       goto 998
 999   ni=1
-      n=73
+      n=nint(360.d0/dth1)+1
 998   continue
-      open(unit=4,file='kr3e_3P.dat',status='unknown')
+      open(unit=4,file=trim(fout),status='unknown')
 
       do 800 i1=ni,n
       at1=dth1*(i1-1)

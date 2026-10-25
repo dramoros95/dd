@@ -1,0 +1,20 @@
+&input
+! ---- kinematics (energies in eV, angles in degrees) ----
+  ees    = 5500.0,      ! scattered electron energy Es
+  ee1    = 15.0,        ! ejected electron 1 energy E1
+  ee2    = 15.0,        ! ejected electron 2 energy E2
+  enioni = 38.0,        ! double ionization energy (Ei = Es+E1+E2+enioni)
+  degts  = 1.0,         ! scattering angle theta_s
+  degps  = 180.0,       ! azimuth of the scattered electron
+  degt2  = 104.0,       ! fixed angle theta_2 of electron 2
+  degp2  = 0.0,         ! azimuth of electron 2 (0 = coplanar)
+  dth1   = 5.0,         ! step of theta_1 (electron 1 scanned in the plane phi_1 = 0)
+! ---- model ----
+  iwf    = 1,           ! 1 = Clementi tables, 2 = data of the original code
+  izv    = 1,           ! 1 = variable charge Z(r), 0 = constant Z = 2
+! ---- numerical grids (see README before changing) ----
+  np1    = 20,          ! points of |p| on [0,dp1] (log-spaced if ilog=1)
+  nt     = 80, nh = 80, ! angular points of p
+! ---- output file ----
+  fout   = 'Kr_E1-15_E2-15_th2-104.dat'
+/

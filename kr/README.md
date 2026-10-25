@@ -7,14 +7,41 @@
 - **Wave functions:** the Clementi tables (4.1–4.3).
 
 ## Compile and run
+**1. Compile once:**
 ```bash
 gfortran -O3 -march=native -fopenmp -ffixed-line-length-132 kr3e_opt.for -o kr3e_opt
 # or: ifx -O3 -xHOST -qopenmp -extend-source 132 kr3e_opt.for -o kr3e_opt
-export OMP_NUM_THREADS=4
-echo "1 73" | ./kr3e_opt        # theta_1 = 5*(index-1) deg, output kr3e_3P.dat
 ```
 
-Switches at the top of the main program:
+**2. One folder per case.** Copy `kr3e.inp.example` into the folder as `kr3e.inp` and edit it.
+Only the variables you write in it change; the others keep their default values:
+```
+&input  ee1=15, ee2=15, degt2=104, fout='Kr_15eV_104.dat' /
+```
+
+**3. Run in that folder:**
+```bash
+export OMP_NUM_THREADS=4        # number of cores
+../kr3e_opt                     # full theta_1 scan 0..360 deg (step dth1)
+echo "1 37" | ../kr3e_opt       # or only indices 1..37 (theta_1 = dth1*(index-1))
+```
+The output file `fout` has two columns: θ₁ (deg) and TDCS (same units as the original code).
+- The first lines of the screen output show the energies, the angles, the orbital norms
+  and Z(r), so you can check the case.
+- Without `kr3e.inp`, the defaults are used (the kinematics of the original code:
+  E₁ = E₂ = 7 eV, θ₂ = 104°).
+
+**Several cases in a row**, for example a scan of θ₂:
+```bash
+for t2 in 60 80 104 120; do
+  mkdir -p th2_$t2 && cd th2_$t2
+  echo "&input ee1=15, ee2=15, degt2=$t2, fout='Kr_15eV_th2_$t2.dat' /" > kr3e.inp
+  OMP_NUM_THREADS=4 ../kr3e_opt > out.txt
+  cd ..
+done
+```
+
+Defaults of the switches (they can also be set in `kr3e.inp`):
 
 | Switch | Value | Meaning |
 |---|---|---|
@@ -24,7 +51,9 @@ Switches at the top of the main program:
 | | 0 | Constant Z = 2 |
 | `lmax`, `dz`, `ndr`×`nlr` | | Partial waves and radial grid of the Z(r) correction |
 
-The kinematics (Eₛ, E₁, E₂, θₛ, θ₂, step in θ₁) and the p grid are set just below the switches.
+All variables that can be set in `kr3e.inp` are listed, with their meaning, in
+`kr3e.inp.example`: kinematics (Eₛ, E₁, E₂, θₛ, θ₂, step in θ₁), model switches, grids and the
+output file name.
 
 ## What was changed, and why
 1. **Z(r) term integrated with one point.** The original `tdN` used `nlg=nlg1=1`: one point
